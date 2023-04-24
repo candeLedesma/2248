@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
 import Square from './Square';
 import Connector from './Connector';
-import { valueInPos, numberToColor, connectionInPath, posInPath, isAdyacent, equalPos } from './util';
+import { valueInPos, numberToColor, connectionInPath, posInPath, isAdyacent, equalPos, index } from './util';
 
-function Board({ grid, numOfColumns, path, onPathChange, onDone }) {
+function Board({ grid, numOfColumns, path, onPathChange, onDone}) {//preguntar score
 
     function onSquareClick(pos) {
         if (path.length === 0) {    // Clicked the first square, so init the path with that square.
             onPathChange([pos]);
         } else if (equalPos(path[path.length - 1], pos)) {  // Clicked the last square in the path
+            //poner bloque resultado
+            //grid[index(pos,numOfColumns)]=grid[index(pos,numOfColumns)]*2;
             if (path.length === 1) {    // If it's the only square in the path, then stop collecting the path (reset to empty).
                 onPathChange([]);
             } else {                    // Otherwise, trigger the game move.
@@ -28,6 +30,9 @@ function Board({ grid, numOfColumns, path, onPathChange, onDone }) {
                 (valueInPos(pos, grid, numOfColumns) === valueInPos(path[path.length - 1], grid, numOfColumns)
                     || (path.length > 1 && valueInPos(pos, grid, numOfColumns) === 2 * valueInPos(path[path.length - 1], grid, numOfColumns)))) {
                 onPathChange(path.concat([pos]));   // Add a square to the path if adyacent, not already in the path, and equal or next power than the last in the path
+                //calcular potencia
+                //setScore(score+grid[index(pos,numOfColumns)]*2);
+
             }
         }
     }

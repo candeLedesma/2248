@@ -68,6 +68,7 @@ function Game() {
     */
     const gridS = JSON.stringify(grid);
     const pathS = JSON.stringify(path);
+
     const queryS = "join(" + gridS + "," + numOfColumns + "," + pathS + ", RGrids)";
     setWaiting(true);
     pengine.query(queryS, (success, response) => {
@@ -91,7 +92,7 @@ function Game() {
     if (restRGrids.length > 0) {
       setTimeout(() => {
         animateEffect(restRGrids);
-      }, 1000);
+      }, 400);//1000
     } else {
       setWaiting(false);
     }
