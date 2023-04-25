@@ -1,23 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect} from 'react';
 import Square from './Square';
 import Connector from './Connector';
 import { valueInPos, numberToColor, connectionInPath, posInPath, isAdyacent, equalPos, joinResult } from './util';
 
-
-function Board({ grid, numOfColumns, path, onPathChange, onDone}) {//preguntar score
-    const [valor, setValor] = useState(0);
-    
+function Board({ grid, numOfColumns, path, onPathChange, onDone, setNuevo}) {//preguntar score
+   
     function onSquareClick(pos) {
         if (path.length === 0) {    // Clicked the first square, so init the path with that square.
-            setValor(0);
+            setNuevo(0);
             onPathChange([pos]);
         } else if (equalPos(path[path.length - 1], pos)) {  // Clicked the last square in the path
-            
             if (path.length === 1) {    // If it's the only square in the path, then stop collecting the path (reset to empty).
                 onPathChange([]);
             } else {                    // Otherwise, trigger the game move.
                 onDone();
-                setValor(0);
+                setNuevo(0);
             }
         }
     }
@@ -27,15 +24,14 @@ function Board({ grid, numOfColumns, path, onPathChange, onDone}) {//preguntar s
         }
         if (isAdyacent(pos, path[path.length - 1])) {
             if (path.length > 1 && equalPos(pos, path[path.length - 2])) {  // Remove the last square in the path if returned to the previous one
-                
                 onPathChange(path.slice(0, path.length - 1));
-                setValor(joinResult(path.slice(0, path.length - 1), grid, numOfColumns));
+                setNuevo(joinResult(path.slice(0, path.length - 1), grid, numOfColumns));
             } else if (!posInPath(pos, path) &&
                 (valueInPos(pos, grid, numOfColumns) === valueInPos(path[path.length - 1], grid, numOfColumns)
                     || (path.length > 1 && valueInPos(pos, grid, numOfColumns) === 2 * valueInPos(path[path.length - 1], grid, numOfColumns)))) {
                 
                 onPathChange(path.concat([pos]));   // Add a square to the path if adyacent, not already in the path, and equal or next power than the last in the path
-                setValor(joinResult(path.concat([pos]), grid, numOfColumns));
+                setNuevo(joinResult(path.concat([pos]), grid, numOfColumns));
             }
         }
     }
@@ -49,10 +45,11 @@ function Board({ grid, numOfColumns, path, onPathChange, onDone}) {//preguntar s
         // eslint-disable-next-line
     }, []);
    
-     
     const numOfRows = grid.length / numOfColumns;//filas
     return (
+        
         <div className="board">
+            
             <div className="squares" style={{ gridTemplateColumns: `repeat(${numOfColumns}, 80px)`, gridTemplateRows: `repeat(${numOfRows}, 80px)` }}>
                 {grid.map((num, i) => {
                     const pos = [Math.floor(i / numOfColumns), i % numOfColumns];
@@ -66,11 +63,6 @@ function Board({ grid, numOfColumns, path, onPathChange, onDone}) {//preguntar s
                         />
                     );
                 })}
-            </div>
-            <div className='bloque'>
-              <Square>
-                  value={valor};
-               </Square>
             </div>
             <div className="horizontalConnectors" style={{ gridTemplateColumns: `repeat(${numOfColumns - 1}, 80px)`, gridTemplateRows: `repeat(${numOfRows}, 80px)` }}>
                 {Array.from({ length: numOfRows * (numOfColumns - 1) }, (_, i) => {

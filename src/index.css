@@ -19,7 +19,7 @@ body {
 
 .header {
   border-bottom: 1px solid lightgray;
-  display: grid;
+  display:flex;
   align-items: center;
   justify-content: center;
   width: 100%;

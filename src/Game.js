@@ -13,6 +13,7 @@ function Game() {
   const [score, setScore] = useState(0);
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
+  const [nuevo, setNuevo] = useState(0);
   useEffect(() => {
     // This is executed just once, after the first render.
     PengineClient.init(onServerReady);
@@ -100,27 +101,35 @@ function Game() {
   if (grid === null) {
     return null;
   }
+  /**
+   * <div className='bloque'>
+              <Square>
+                  value = {Board.valor}
+               </Square>
+        </div>
+   */
   return (
     
     <div className="game">
       <div className="header">
-        <div className='bloque'>
-              <Square>
-                  value = {Board.valor};
-               </Square>
+        <div className="bloque">
+            <Square
+              value={nuevo}
+           />
         </div>
         <div className="score">{score}</div>
       </div>
-      <Board
-        grid={grid}
-        numOfColumns={numOfColumns}
-        path={path}
-        onPathChange={onPathChange}
-        onDone={onPathDone}
-      />
-     
+        <Board
+          grid={grid}
+          numOfColumns={numOfColumns}
+          path={path}
+          onPathChange={onPathChange}
+          onDone={onPathDone}
+          setNuevo = {setNuevo}
+        />
 
     </div>
+
   );
 }
 
