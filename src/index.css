@@ -9,9 +9,17 @@ body {
   align-items: center;
 }
 
+.bloque {
+  margin: 15px;
+  font-size: 25px;
+  display: grid;
+  width: 60px;
+  height: 40px;
+}
+
 .header {
   border-bottom: 1px solid lightgray;
-  display: flex;
+  display: grid;
   align-items: center;
   justify-content: center;
   width: 100%;
@@ -85,6 +93,7 @@ body {
   height: 8px;
 }
 
+
 .connectorLine.vertical {
   transform: rotate(90deg);
 }
@@ -96,3 +105,4 @@ body {
 .connectorLine.backslash {
   transform: rotate(45deg);
 }
+

@@ -76,7 +76,7 @@ smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado):- obtenerListaIn
 	log2(Total,ResLog),
 	piso(ResLog,ResPiso),
 	potencia(2,ResPiso,ResPot),
-	((ResPot is ResPiso, Resultado is ResPiso); potencia(2,ResPiso+1,Resultado)).
+	((ResPot is Total, Resultado is Total); potencia(2,ResPiso+1,Resultado)).
 	
 	
 	
