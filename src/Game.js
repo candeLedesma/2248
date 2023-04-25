@@ -80,6 +80,12 @@ function Game() {
         setWaiting(false);
       }
     });
+
+    //efecto gravedad
+    
+
+
+
   }
 
   /**
