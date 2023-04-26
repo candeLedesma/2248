@@ -9,25 +9,20 @@ body {
   align-items: center;
 }
 
-.bloque {
-  margin: 15px;
-  font-size: 25px;
-  display: grid;
-  width: 60px;
-  height: 40px;
-}
 
 .header {
   border-bottom: 1px solid lightgray;
   display:flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 1325px;
+  height:54px ;
 }
 
 .score {
   margin: 10px;
   font-size: 25px;
+  /*display: none;*/
 }
 
 .board {

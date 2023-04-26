@@ -118,12 +118,10 @@ function Game() {
     
     <div className="game">
       <div className="header">
-        <div className="bloque">
-            <Square
-              value={nuevo}
-           />
-        </div>
-        <div className="score">{score}</div>
+        <Square
+          value={nuevo}
+        />
+      <div className="score">{score}</div>
       </div>
         <Board
           grid={grid}
