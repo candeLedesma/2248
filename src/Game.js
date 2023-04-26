@@ -120,6 +120,7 @@ function Game() {
       <div className="header">
         <Square
           value={nuevo}
+          className="last-square"
         />
       <div className="score">{score}</div>
       </div>

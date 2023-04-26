@@ -48,6 +48,12 @@ body {
   cursor: pointer;
 }
 
+.last-square {
+  height: 40px;
+  width: 40px;
+  padding: 5px;;
+}
+
 .rise {
   margin: 2px;
 }
