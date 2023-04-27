@@ -1,14 +1,15 @@
 :- module(proylcc, 
 	[  
 		join/4
+
 	]).
 
+:- module(proylcc, 
+	[  
+		gravity/4
 
-/**
- * join(+Grid, +NumOfColumns, +Path, -RGrids) 
- * RGrids es la lista de grillas representando el efecto, en etapas, de combinar las celdas del camino Path
- * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
- */ 
+	]).
+
 
 /*longitud de una lista*/
 longitud([],0).
@@ -17,13 +18,18 @@ longitud([X|Xs],Z):-longitud(Xs,Y), Z is Y+1.
 /*posicion en donde quiero poner un 0*/
 obtenerIndice([Y|Ys],Columnas,Indice):- I=Y,J=Ys,Indice is I*Columnas+J.
 
+obtenerValor([],_Indice,_Cont,_Valor).
+obtenerValor([X|Xs],Indice,Cont,Valor):- (( Indice is Cont, Valor=X);X is X),obtenerValor(Xs,Indice,Cont+1,Valor).
+
+/*setear nuevo valor dado un indice de una grilla*/
+setearValor([],_Indice,_Cont,_Valor,[]).
+setearValor([X|Xs],Indice,Cont,Valor,[Z|Zs]):- ((Indice is Cont,Z=Valor);Z=X),setearValor(Xs,Indice,Cont+1,Valor,Zs).
+
+
+
 /*pongo un 0 en la posicion I,J de la grilla*/
 ponerEnCero([],Indice,[],_Cont).
 ponerEnCero([X|Xs],Indice,[Z|Zs],Cont):- ((Indice is Cont,Z=0);Z=X),ponerEnCero(Xs,Indice,Zs,Cont+1).
-
-/*setear nuevo valor dado un indice de una grilla*/
-setearValor([],Indice,_Cont,_Valor,[]).
-setearValor([X|Xs],Indice,Cont,Valor,[Z|Zs]):- ((Indice is Cont,Z=Valor);Z=X),setearValor(Xs,Indice,Cont+1,Valor,Zs).
 
 
 /*join recursivo*/
@@ -46,9 +52,6 @@ obtenerListaIndices([[X|Xs]|Zs],NumOfColumns,[Y|Ys]):-obtenerIndice([X|Xs],NumOf
 	obtenerListaIndices(Zs,NumOfColumns,Ys),
 	Y=Index.
 
-
-obtenerValor([],_Indice,_Cont,_Valor).
-obtenerValor([X|Xs],Indice,Cont,Valor):- (( Indice is Cont, Valor=X);X is X),obtenerValor(Xs,Indice,Cont+1,Valor).
 
 
 obtenerListaValores(_Grilla,[],[]).
@@ -78,5 +81,23 @@ smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado):- obtenerListaIn
 	potencia(2,ResPiso,ResPot),
 	((ResPot is Total, Resultado is Total); potencia(2,ResPiso+1,Resultado)).
 	
-	
-	
+
+
+/*BAJO UNA POSICION TODOS LOE ELEMENTOS DE LA COLUMNA J*/
+bajoElemento(Grilla,0,J,_Columnas,Nueva):- setearValor(Grilla,J,0,0,Nueva).
+bajoElemento(Grilla,I,J,Columnas,Resultado):- IndiceAC is I*Columnas+J,
+	P is I-1,
+	IndiceR is P*Columnas+J,
+	obtenerValor(Grilla,IndiceR,0,ValorR),
+	setearValor(Grilla,IndiceAC,0,ValorR,N),
+    setearValor(N,IndiceR,0,0,C),
+	bajoElemento(C,P,J,Columnas,Resultado).
+
+
+gravity(Grilla,_NumOfColumns,[_Ult],Grilla).
+gravity(Grilla,NumOfColumns,[[X|Xs]|Ys],GrillaG):-
+    obtenerIndice([X|Xs],NumOfColumns,Index),
+	bajoElemento(Grilla,X,Xs,NumOfColumns,Resultado),
+	obtenerValor(Resultado,Index,0,ValorNuevo),
+	((ValorNuevo is 0,gravity(Resultado,NumOfColumns,[[X|Xs]|Ys],GrillaG); 
+    gravity(Resultado,NumOfColumns,Ys,GrillaG))).

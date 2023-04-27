@@ -74,7 +74,7 @@ function Game() {
     pengine.query(queryS, (success, response) => {
       if (success) {
         setScore(score + joinResult(path, grid, numOfColumns));
-        setPath([]);
+        //setPath([]);
         animateEffect(response['RGrids']);
       } else {
         setWaiting(false);
@@ -82,7 +82,17 @@ function Game() {
     });
 
     //efecto gravedad
-    
+    const gridS1 = JSON.stringify(grid);//prueba
+    const queryF = "gravity(" + gridS1 + "," + numOfColumns + "," + pathS + ", RGrid)";
+    setWaiting(true);
+    pengine.query(queryF, (success, response) => {
+      if (success) {
+          setGrid(response['RGrid']);
+          setPath([]);
+      } else {
+        setWaiting(false);
+      }
+    });
 
 
 
@@ -107,13 +117,7 @@ function Game() {
   if (grid === null) {
     return null;
   }
-  /**
-   * <div className='bloque'>
-              <Square>
-                  value = {Board.valor}
-               </Square>
-        </div>
-   */
+ 
   return (
     
     <div className="game">
