@@ -74,21 +74,19 @@ function Game() {
     pengine.query(queryS, (success, response) => {
       if (success) {
         setScore(score + joinResult(path, grid, numOfColumns));
-        //setPath([]);
+        setPath([]);
         animateEffect(response['RGrids']);
       } else {
         setWaiting(false);
       }
     });
 
-    //efecto gravedad
-    const gridS1 = JSON.stringify(grid);//prueba
-    const queryF = "gravity(" + gridS1 + "," + numOfColumns + "," + pathS + ", RGrid)";
+    
+    const queryF = "gravity(" + gridS + "," + numOfColumns + ", RGrid)";
     setWaiting(true);
     pengine.query(queryF, (success, response) => {
       if (success) {
           setGrid(response['RGrid']);
-          setPath([]);
       } else {
         setWaiting(false);
       }

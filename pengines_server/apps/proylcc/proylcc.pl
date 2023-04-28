@@ -28,7 +28,7 @@ setearValor([X|Xs],Indice,Cont,Valor,[Z|Zs]):- ((Indice is Cont,Z=Valor);Z=X),se
 
 
 /*pongo un 0 en la posicion I,J de la grilla*/
-ponerEnCero([],Indice,[],_Cont).
+ponerEnCero([],_,[],_Cont).
 ponerEnCero([X|Xs],Indice,[Z|Zs],Cont):- ((Indice is Cont,Z=0);Z=X),ponerEnCero(Xs,Indice,Zs,Cont+1).
 
 
@@ -93,11 +93,21 @@ bajoElemento(Grilla,I,J,Columnas,Resultado):- IndiceAC is I*Columnas+J,
     setearValor(N,IndiceR,0,0,C),
 	bajoElemento(C,P,J,Columnas,Resultado).
 
+/* caso base fila=NumOfRows*/
+recorrerFilas(Grilla,_Col,NumOfRows,_NumOfColumns,NumOfRows,Grilla).
+recorrerFilas(Grilla,Col,Fila,NumOfColumns,NumOfRows,GNueva):-
+	obtenerIndice([Fila,Col],NumOfColumns,Indice),
+	obtenerValor(Grilla,Indice,0,Valor),
+	((Valor is 0 -> bajoElemento(Grilla,Fila,Col,NumOfColumns,Nueva));Nueva=Grilla),
+    F is Fila+1,
+	recorrerFilas(Nueva,Col,F,NumOfColumns,NumOfRows,GNueva).
 
-gravity(Grilla,_NumOfColumns,[_Ult],Grilla).
-gravity(Grilla,NumOfColumns,[[X|Xs]|Ys],GrillaG):-
-    obtenerIndice([X|Xs],NumOfColumns,Index),
-	bajoElemento(Grilla,X,Xs,NumOfColumns,Resultado),
-	obtenerValor(Resultado,Index,0,ValorNuevo),
-	((ValorNuevo is 0,gravity(Resultado,NumOfColumns,[[X|Xs]|Ys],GrillaG); 
-    gravity(Resultado,NumOfColumns,Ys,GrillaG))).
+/* caso base col=0*/
+recorrerColumnas(Grilla,0,_Fila,_NumOfColumns,_NumOfRows,Grilla).
+recorrerColumnas(Grilla,Col,Fila,NumOfColumns,NumOfRows,R):- C is Col-1, 
+	recorrerFilas(Grilla,C,0,NumOfColumns,NumOfRows,GNueva),
+	recorrerColumnas(GNueva,C,Fila,NumOfColumns,NumOfRows,R).
+
+
+gravity(Grilla,NumOfColumns,GrillaG):- longitud(Grilla,Long),NumOfRows is Long/NumOfColumns,
+	recorrerColumnas(Grilla,NumOfColumns,NumOfRows,NumOfColumns,NumOfRows,GrillaG).
