@@ -1,19 +1,5 @@
-:- module(proylcc, 
-	[  
-		join/4
-
-	]).
-
-:- module(proylcc, 
-	[  
-		gravity/4
-
-	]).
-
-
-/*longitud de una lista*/
 longitud([],0).
-longitud([X|Xs],Z):-longitud(Xs,Y), Z is Y+1.
+longitud([_X|Xs],Z):-longitud(Xs,Y), Z is Y+1.
 
 /*posicion en donde quiero poner un 0*/
 obtenerIndice([Y|Ys],Columnas,Indice):- I=Y,J=Ys,Indice is I*Columnas+J.
@@ -26,27 +12,16 @@ setearValor([],_Indice,_Cont,_Valor,[]).
 setearValor([X|Xs],Indice,Cont,Valor,[Z|Zs]):- ((Indice is Cont,Z=Valor);Z=X),setearValor(Xs,Indice,Cont+1,Valor,Zs).
 
 
-
-/*pongo un 0 en la posicion I,J de la grilla*/
-ponerEnCero([],_,[],_Cont).
-ponerEnCero([X|Xs],Indice,[Z|Zs],Cont):- ((Indice is Cont,Z=0);Z=X),ponerEnCero(Xs,Indice,Zs,Cont+1).
-
-
 /*join recursivo*/
 joinRec(Grilla,Columnas,[Ultimo],[W],Resultado):-obtenerIndice(Ultimo,Columnas,Indice),setearValor(Grilla,Indice,0,Resultado,NuevaGrilla),W=NuevaGrilla.
 joinRec(Grilla,Columnas,[[Y|Ys]|Zs],[R|Rs],Resultado):- obtenerIndice([Y|Ys],Columnas,Indice), 
-	ponerEnCero(Grilla,Indice,NuevaGrilla,0),
+	setearValor(Grilla,Indice,0,0,NuevaGrilla),
 	R= NuevaGrilla,
 	joinRec(NuevaGrilla,Columnas,Zs,Rs,Resultado).
 
-ultimo([U],U).
-ultimo([_|Xs],Res):-ultimo(Xs,Res).
 
+join(Grid, NumOfColumns, Path, RGrids):-smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado), joinRec(Grid,NumOfColumns,Path,RGrids,Resultado).    
 
-join(Grid, NumOfColumns, Path, RGrids):-smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado),
-    joinRec(Grid,NumOfColumns,Path,RGrids,Resultado).    
-
-/*gravity(Resultado, NumOfColumns, RGrids)*/
 
 /*predicados para calcular ultimo bloque*/
 sumatoria([],0).
@@ -56,6 +31,8 @@ obtenerListaIndices([],_NumOfColumns,[]).
 obtenerListaIndices([[X|Xs]|Zs],NumOfColumns,[Y|Ys]):-obtenerIndice([X|Xs],NumOfColumns,Index),
 	obtenerListaIndices(Zs,NumOfColumns,Ys),
 	Y=Index.
+
+
 
 obtenerListaValores(_Grilla,[],[]).
 obtenerListaValores(Grilla,[Y|Ys],[Z|Zs]):- obtenerValor(Grilla,Y,0,Z), obtenerListaValores(Grilla,Ys,Zs).
@@ -73,7 +50,9 @@ potencia(X,N,P) :- % Caso recursivo
    potencia(X,N1,P1), % Calcular X elevado a N-1
    P is P1 * X. % El resultado es X multiplicado por X elevado a N-1
 
-smallerPow2GreaterOrEqualThan(_Grid,_NumOfColumns,[_Ultimo],_Resultado).
+
+
+smallerPow2GreaterOrEqualThan(_Grid,_NumOfColumns,[_U],_R).
 smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado):- obtenerListaIndices(Path,NumOfColumns,Indices), 
 	obtenerListaValores(Grid,Indices,Valores),
 	sumatoria(Valores,Total),
@@ -82,6 +61,7 @@ smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado):- obtenerListaIn
 	potencia(2,ResPiso,ResPot),
 	((ResPot is Total, Resultado is Total); potencia(2,ResPiso+1,Resultado)).
 	
+
 
 /*BAJO UNA POSICION TODOS LOE ELEMENTOS DE LA COLUMNA J*/
 bajoElemento(Grilla,0,J,_Columnas,Nueva):- setearValor(Grilla,J,0,0,Nueva).
@@ -98,7 +78,8 @@ recorrerFilas(Grilla,_Col,NumOfRows,_NumOfColumns,NumOfRows,Grilla).
 recorrerFilas(Grilla,Col,Fila,NumOfColumns,NumOfRows,GNueva):-
 	obtenerIndice([Fila,Col],NumOfColumns,Indice),
 	obtenerValor(Grilla,Indice,0,Valor),
-	((Valor is 0 -> bajoElemento(Grilla,Fila,Col,NumOfColumns,Nueva));Nueva=Grilla), F is Fila+1,
+	((Valor is 0 -> bajoElemento(Grilla,Fila,Col,NumOfColumns,Nueva));Nueva=Grilla),
+    F is Fila+1,
 	recorrerFilas(Nueva,Col,F,NumOfColumns,NumOfRows,GNueva).
 
 /* caso base col=0*/
@@ -108,30 +89,55 @@ recorrerColumnas(Grilla,Col,Fila,NumOfColumns,NumOfRows,R):- C is Col-1,
 	recorrerColumnas(GNueva,C,Fila,NumOfColumns,NumOfRows,R).
 
 
-/*caso base ambas listas estan vacias*/
-rellenarGrilla([], []).
-/*el 1er elemento de la lista puede ser 0
- * entonces devolvemos una lista con su primer elemento un numero random
- */
-rellenarGrilla([0|Xs], [ValorA|Ys]) :-
-    random(2, 8, Random),
-    potencia(2, Random, ValorA),
-    rellenarGrilla(Xs, Ys).
-
-/*el 1er elemento de la lista no es 0
- * entonces devolvemos una lista con su primer elemento igual al de la anterior
- */
-rellenarGrilla([X|Xs], [X|Ys]) :-
-    X \= 0,
-    rellenarGrilla(Xs, Ys).
-
-
 gravity(Grilla,NumOfColumns,GrillaG):- longitud(Grilla,Long),NumOfRows is Long/NumOfColumns,
-	recorrerColumnas(Grilla,NumOfColumns,NumOfRows,NumOfColumns,NumOfRows,GrillaRes),
-    rellenarGrilla(GrillaRes, GrillaG).
-                  
-                  
-                  
-                  
-                  
-                  
+	recorrerColumnas(Grilla,NumOfColumns,NumOfRows,NumOfColumns,NumOfRows,GrillaG).
+
+
+abs(X, Y) :- X < 0,Y is -X.
+abs(X, X) :- X >= 0.
+
+/*true si las posiciones son adyacentes A0=\=B0,A1=\=B1,*/
+adyacente([A0|A1],[B0|B1]):- I0 is A0-B0, I1 is A1-B1, abs(I0,R0), abs(I1,R1), R0=<1, R1=<1.
+
+/*calculo auxiliar para recorrer matriz*/
+calcular(NumOfColumns,FILA,COL,F,C):-((COL is NumOfColumns-1, F is FILA+1, C is 0); (F is FILA,C is COL+1)).
+
+ultimo([U],U).
+ultimo([_|Xs],Res):-ultimo(Xs,Res).
+
+posDistinta([X|Xs],[Y|Ys]):- (X \= Y;Xs \= Ys).
+
+
+cumpleCondiciones(L,Pos) :-
+    findall(Z, (member(Z,L), posDistinta(Pos,Z), adyacente(Z,Pos)), Zs), \+ Zs = [].
+
+
+
+buscarAdyacentes(_Grilla,_Pos,_Elem,NumOfRows,_NumOfColumns,NumOfRows,0,Listita,_PEPE,Listita).
+buscarAdyacentes([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,FILA,COL,Listita,PEPE,R):-
+    calcular(NumOfColumns,FILA,COL,F,C),
+    ((notmember([FILA,COL],PEPE),X is Elem,cumpleCondiciones(Listita,[FILA,COL]),
+    append(Listita,[[FILA,COL]],NuevaLista));NuevaLista=Listita),
+    buscarAdyacentes(Xs,Pos,Elem,NumOfRows,NumOfColumns,F,C,NuevaLista,PEPE,R).
+
+
+/*golsasmdkm*/
+notmember(X, L) :- \+ member(X, L).
+
+/*caso base NumOfRows=FILA,*/
+recorrerGrilla(_Grilla,GrillaAux,NumOfRows,_NumOfColumns,NumOfRows,0,Visitados,GrillaAux,Visitados).
+recorrerGrilla([X|Xs],GrillaAux,NumOfRows,NumOfColumns,FILA,COLUMNA,Visitados,Resultado,K):-
+    (notmember([FILA,COLUMNA],Visitados),
+    buscarAdyacentes(GrillaAux,[FILA,COLUMNA],X,NumOfRows,NumOfColumns,0,0,[[FILA,COLUMNA]],Visitados,Adyacentes),
+    (longitud(Adyacentes,Long),Long>1,join(GrillaAux,NumOfColumns,Adyacentes,ListaGrillas),
+    append(Visitados,Adyacentes,Visitados2),ultimo(ListaGrillas,GrillaNueva));
+    GrillaNueva=GrillaAux,Visitados2=Visitados),
+    calcular(NumOfColumns,FILA,COLUMNA,F,C),
+    recorrerGrilla(Xs,GrillaNueva,NumOfRows,NumOfColumns,F,C,Visitados2,Resultado,K).
+    
+   
+booster(Grilla,NumOfColumns,Resultado,Visitados):-
+	longitud(Grilla,Long),
+	NumOfRows is Long/NumOfColumns,
+	recorrerGrilla(Grilla,Grilla,NumOfRows,NumOfColumns,0,0,[-1],Resultado,Visitados).
+
