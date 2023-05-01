@@ -1,3 +1,15 @@
+:- module(proylcc, 
+	[  
+		join/4
+
+	]).
+
+:- module(proylcc, 
+	[  
+		gravity/4
+
+	]).
+
 longitud([],0).
 longitud([_X|Xs],Z):-longitud(Xs,Y), Z is Y+1.
 
@@ -102,42 +114,45 @@ adyacente([A0|A1],[B0|B1]):- I0 is A0-B0, I1 is A1-B1, abs(I0,R0), abs(I1,R1), R
 /*calculo auxiliar para recorrer matriz*/
 calcular(NumOfColumns,FILA,COL,F,C):-((COL is NumOfColumns-1, F is FILA+1, C is 0); (F is FILA,C is COL+1)).
 
+/*devulve el ultimo elemento de una lista*/
 ultimo([U],U).
 ultimo([_|Xs],Res):-ultimo(Xs,Res).
 
+/*true si la posicion [X,Xs] es distinta a [Y,Ys]*/
 posDistinta([X|Xs],[Y|Ys]):- (X \= Y;Xs \= Ys).
 
-
+/*true si Z pertenece a L, Z es distinto de Pos y Pos es adyacente a Z*/
 cumpleCondiciones(L,Pos) :-
     findall(Z, (member(Z,L), posDistinta(Pos,Z), adyacente(Z,Pos)), Zs), \+ Zs = [].
 
 
-
-buscarAdyacentes(_Grilla,_Pos,_Elem,NumOfRows,_NumOfColumns,NumOfRows,0,Listita,_PEPE,Listita).
-buscarAdyacentes([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,FILA,COL,Listita,PEPE,R):-
+/*retorna en Lista todas las posiciones adyacentes a la posicion Pos*/
+buscarAdyacentes(_Grilla,_Pos,_Elem,NumOfRows,_NumOfColumns,NumOfRows,0,Listita,_Visitados,Listita).
+buscarAdyacentes([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,FILA,COL,Listita,Visitados,R):-
     calcular(NumOfColumns,FILA,COL,F,C),
-    ((notmember([FILA,COL],PEPE),X is Elem,cumpleCondiciones(Listita,[FILA,COL]),
+    ((notmember([FILA,COL],Visitados),X is Elem,cumpleCondiciones(Listita,[FILA,COL]),
     append(Listita,[[FILA,COL]],NuevaLista));NuevaLista=Listita),
-    buscarAdyacentes(Xs,Pos,Elem,NumOfRows,NumOfColumns,F,C,NuevaLista,PEPE,R).
+    buscarAdyacentes(Xs,Pos,Elem,NumOfRows,NumOfColumns,F,C,NuevaLista,Visitados,R).
 
 
-/*golsasmdkm*/
+/*true si X no pertenece a la lista L*/
 notmember(X, L) :- \+ member(X, L).
 
 /*caso base NumOfRows=FILA,*/
-recorrerGrilla(_Grilla,GrillaAux,NumOfRows,_NumOfColumns,NumOfRows,0,Visitados,GrillaAux,Visitados).
-recorrerGrilla([X|Xs],GrillaAux,NumOfRows,NumOfColumns,FILA,COLUMNA,Visitados,Resultado,K):-
+recorrerGrilla(_Grilla,GrillaAux,NumOfRows,_NumOfColumns,NumOfRows,0,_Visitados,GrillaAux).
+recorrerGrilla([X|Xs],GrillaAux,NumOfRows,NumOfColumns,FILA,COLUMNA,Visitados,Resultado):-
     (notmember([FILA,COLUMNA],Visitados),
     buscarAdyacentes(GrillaAux,[FILA,COLUMNA],X,NumOfRows,NumOfColumns,0,0,[[FILA,COLUMNA]],Visitados,Adyacentes),
     (longitud(Adyacentes,Long),Long>1,join(GrillaAux,NumOfColumns,Adyacentes,ListaGrillas),
     append(Visitados,Adyacentes,Visitados2),ultimo(ListaGrillas,GrillaNueva));
     GrillaNueva=GrillaAux,Visitados2=Visitados),
     calcular(NumOfColumns,FILA,COLUMNA,F,C),
-    recorrerGrilla(Xs,GrillaNueva,NumOfRows,NumOfColumns,F,C,Visitados2,Resultado,K).
+    recorrerGrilla(Xs,GrillaNueva,NumOfRows,NumOfColumns,F,C,Visitados2,Resultado).
     
    
-booster(Grilla,NumOfColumns,Resultado,Visitados):-
+booster(Grilla,NumOfColumns,Resultado):-
 	longitud(Grilla,Long),
 	NumOfRows is Long/NumOfColumns,
-	recorrerGrilla(Grilla,Grilla,NumOfRows,NumOfColumns,0,0,[-1],Resultado,Visitados).
+	recorrerGrilla(Grilla,Grilla,NumOfRows,NumOfColumns,0,0,[-1],Resultado).
+
 
