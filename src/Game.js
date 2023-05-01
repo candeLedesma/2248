@@ -14,6 +14,7 @@ function Game() {
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
   const [nuevo, setNuevo] = useState(0);
+
   useEffect(() => {
     // This is executed just once, after the first render.
     PengineClient.init(onServerReady);
@@ -76,24 +77,21 @@ function Game() {
         setScore(score + joinResult(path, grid, numOfColumns));
         setPath([]);
         animateEffect(response['RGrids']);
+       
       } else {
         setWaiting(false);
       }
     });
-
-    
-    const queryF = "gravity(" + gridS + "," + numOfColumns + ", RGrid)";
-    setWaiting(true);
+    /*
+    const gridA = JSON.stringify(grid);
+    const queryF = "gravity(" + gridA + "," + numOfColumns + ", RGrid)";
     pengine.query(queryF, (success, response) => {
       if (success) {
           setGrid(response['RGrid']);
       } else {
         setWaiting(false);
       }
-    });
-
-
-
+    });*/
   }
 
   /**

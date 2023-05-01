@@ -39,9 +39,14 @@ joinRec(Grilla,Columnas,[[Y|Ys]|Zs],[R|Rs],Resultado):- obtenerIndice([Y|Ys],Col
 	R= NuevaGrilla,
 	joinRec(NuevaGrilla,Columnas,Zs,Rs,Resultado).
 
+ultimo([U],U).
+ultimo([_|Xs],Res):-ultimo(Xs,Res).
 
-join(Grid, NumOfColumns, Path, RGrids):-smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado), joinRec(Grid,NumOfColumns,Path,RGrids,Resultado).    
 
+join(Grid, NumOfColumns, Path, RGrids):-smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado),
+    joinRec(Grid,NumOfColumns,Path,RGrids,Resultado).    
+
+/*gravity(Resultado, NumOfColumns, RGrids)*/
 
 /*predicados para calcular ultimo bloque*/
 sumatoria([],0).
@@ -51,8 +56,6 @@ obtenerListaIndices([],_NumOfColumns,[]).
 obtenerListaIndices([[X|Xs]|Zs],NumOfColumns,[Y|Ys]):-obtenerIndice([X|Xs],NumOfColumns,Index),
 	obtenerListaIndices(Zs,NumOfColumns,Ys),
 	Y=Index.
-
-
 
 obtenerListaValores(_Grilla,[],[]).
 obtenerListaValores(Grilla,[Y|Ys],[Z|Zs]):- obtenerValor(Grilla,Y,0,Z), obtenerListaValores(Grilla,Ys,Zs).
@@ -70,9 +73,7 @@ potencia(X,N,P) :- % Caso recursivo
    potencia(X,N1,P1), % Calcular X elevado a N-1
    P is P1 * X. % El resultado es X multiplicado por X elevado a N-1
 
-
-
-smallerPow2GreaterOrEqualThan(_Grid,_NumOfColumns,[Ultimo],Resultado).
+smallerPow2GreaterOrEqualThan(_Grid,_NumOfColumns,[_Ultimo],_Resultado).
 smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado):- obtenerListaIndices(Path,NumOfColumns,Indices), 
 	obtenerListaValores(Grid,Indices,Valores),
 	sumatoria(Valores,Total),
@@ -81,7 +82,6 @@ smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado):- obtenerListaIn
 	potencia(2,ResPiso,ResPot),
 	((ResPot is Total, Resultado is Total); potencia(2,ResPiso+1,Resultado)).
 	
-
 
 /*BAJO UNA POSICION TODOS LOE ELEMENTOS DE LA COLUMNA J*/
 bajoElemento(Grilla,0,J,_Columnas,Nueva):- setearValor(Grilla,J,0,0,Nueva).
@@ -98,8 +98,7 @@ recorrerFilas(Grilla,_Col,NumOfRows,_NumOfColumns,NumOfRows,Grilla).
 recorrerFilas(Grilla,Col,Fila,NumOfColumns,NumOfRows,GNueva):-
 	obtenerIndice([Fila,Col],NumOfColumns,Indice),
 	obtenerValor(Grilla,Indice,0,Valor),
-	((Valor is 0 -> bajoElemento(Grilla,Fila,Col,NumOfColumns,Nueva));Nueva=Grilla),
-    F is Fila+1,
+	((Valor is 0 -> bajoElemento(Grilla,Fila,Col,NumOfColumns,Nueva));Nueva=Grilla), F is Fila+1,
 	recorrerFilas(Nueva,Col,F,NumOfColumns,NumOfRows,GNueva).
 
 /* caso base col=0*/
@@ -109,5 +108,30 @@ recorrerColumnas(Grilla,Col,Fila,NumOfColumns,NumOfRows,R):- C is Col-1,
 	recorrerColumnas(GNueva,C,Fila,NumOfColumns,NumOfRows,R).
 
 
+/*caso base ambas listas estan vacias*/
+rellenarGrilla([], []).
+/*el 1er elemento de la lista puede ser 0
+ * entonces devolvemos una lista con su primer elemento un numero random
+ */
+rellenarGrilla([0|Xs], [ValorA|Ys]) :-
+    random(2, 8, Random),
+    potencia(2, Random, ValorA),
+    rellenarGrilla(Xs, Ys).
+
+/*el 1er elemento de la lista no es 0
+ * entonces devolvemos una lista con su primer elemento igual al de la anterior
+ */
+rellenarGrilla([X|Xs], [X|Ys]) :-
+    X \= 0,
+    rellenarGrilla(Xs, Ys).
+
+
 gravity(Grilla,NumOfColumns,GrillaG):- longitud(Grilla,Long),NumOfRows is Long/NumOfColumns,
-	recorrerColumnas(Grilla,NumOfColumns,NumOfRows,NumOfColumns,NumOfRows,GrillaG).
+	recorrerColumnas(Grilla,NumOfColumns,NumOfRows,NumOfColumns,NumOfRows,GrillaRes),
+    rellenarGrilla(GrillaRes, GrillaG).
+                  
+                  
+                  
+                  
+                  
+                  
