@@ -36,7 +36,9 @@ join(Grid, NumOfColumns, Path, RGrids):-smallerPow2GreaterOrEqualThan(Grid,NumOf
 	joinRec(Grid,NumOfColumns,Path,PEPE,Resultado),
 	ultimo(PEPE,Ultimo),
 	gravity(Ultimo,NumOfColumns,GrillaNueva),
-	append(PEPE,[GrillaNueva],RGrids).    
+	append(PEPE,[GrillaNueva],GrillaGravedad),
+	rellenarGrilla(GrillaNueva,GrillaLlena),
+	append(GrillaGravedad,[GrillaLlena],RGrids).
 
 
 /*predicados para calcular ultimo bloque*/
@@ -160,3 +162,19 @@ booster(Grilla,NumOfColumns,Resultado):-
 	recorrerGrilla(Grilla,Grilla,NumOfRows,NumOfColumns,0,0,[-1],Resultado).
 
 
+/*caso base ambas listas estan vacias*/
+ rellenarGrilla([], []).
+ /*el 1er elemento de la lista puede ser 0
+  * entonces devolvemos una lista con su primer elemento un numero random
+  */
+ rellenarGrilla([0|Xs], [ValorA|Ys]) :-
+     random(2, 8, Random),
+     potencia(2, Random, ValorA),
+     rellenarGrilla(Xs, Ys).
+
+ /*el 1er elemento de la lista no es 0
+  * entonces devolvemos una lista con su primer elemento igual al de la anterior
+  */
+ rellenarGrilla([X|Xs], [X|Ys]) :-
+     X \= 0,
+     rellenarGrilla(Xs, Ys).
