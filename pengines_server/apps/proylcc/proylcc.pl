@@ -32,7 +32,11 @@ joinRec(Grilla,Columnas,[[Y|Ys]|Zs],[R|Rs],Resultado):- obtenerIndice([Y|Ys],Col
 	joinRec(NuevaGrilla,Columnas,Zs,Rs,Resultado).
 
 
-join(Grid, NumOfColumns, Path, RGrids):-smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado), joinRec(Grid,NumOfColumns,Path,RGrids,Resultado).    
+join(Grid, NumOfColumns, Path, RGrids):-smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado), 
+	joinRec(Grid,NumOfColumns,Path,PEPE,Resultado),
+	ultimo(PEPE,Ultimo),
+	gravity(Ultimo,NumOfColumns,GrillaNueva),
+	append(PEPE,[GrillaNueva],RGrids).    
 
 
 /*predicados para calcular ultimo bloque*/
