@@ -50,23 +50,6 @@ function Game() {
    * Called when the user finished drawing a path in the grid.
    */
   function onPathDone() {
-    /*
-    Build Prolog query, which will be like:
-    join([
-          64,4,64,32,16,
-          64,8,16,2,32,
-          2,4,64,64,2,
-          2,4,32,16,4,
-          16,4,16,16,16,
-          16,64,2,32,32,
-          64,2,64,32,64,
-          32,2,64,32,4
-          ], 
-          5, 
-          [[2, 0], [3, 0], [4, 1], [3, 1], [2, 1], [1, 1], [1, 2], [0, 3]],
-          RGrids
-        ).
-    */
     const gridS = JSON.stringify(grid);
     const pathS = JSON.stringify(path);
 
@@ -82,16 +65,19 @@ function Game() {
         setWaiting(false);
       }
     });
-    /*
-    const gridA = JSON.stringify(grid);
-    const queryF = "gravity(" + gridA + "," + numOfColumns + ", RGrid)";
-    pengine.query(queryF, (success, response) => {
+  }
+  /*booster(Grilla,NumOfColumns,Resultado)*/ 
+  function activateBooster() {
+    const gridS = JSON.stringify(grid);
+  
+    const queryS = "booster(" + gridS + "," + numOfColumns + ", RGrid)";
+    setWaiting(true);
+    pengine.query(queryS, (success, response) => {
       if (success) {
-          setGrid(response['RGrid']);
-      } else {
-        setWaiting(false);
+        setGrid(response['RGrid']); 
       }
-    });*/
+      setWaiting(false);
+    });
   }
 
   /**
@@ -118,20 +104,22 @@ function Game() {
     
     <div className="game">
       <div className="header">
-        <Square
-          value={nuevo}
-          className="last-square"
-        />
-      <div className="score">{score}</div>
+        {path.length > 1
+          ? <Square value={nuevo} className="last-square" />
+          : <div className="score">{score} </div>
+        }
       </div>
-        <Board
-          grid={grid}
-          numOfColumns={numOfColumns}
-          path={path}
-          onPathChange={onPathChange}
-          onDone={onPathDone}
-          setNuevo = {setNuevo}
-        />
+      <Board
+        grid={grid}
+        numOfColumns={numOfColumns}
+        path={path}
+        onPathChange={onPathChange}
+        onDone={onPathDone}
+        setNuevo = {setNuevo}
+      />
+      <button onClick={activateBooster}>
+        Booster
+      </button>
 
     </div>
 
