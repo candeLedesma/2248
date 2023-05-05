@@ -10,12 +10,14 @@
 
 	]).
 
+/*calcula la longitud de la lista pasada por parametro*/
 longitud([],0).
 longitud([_X|Xs],Z):-longitud(Xs,Y), Z is Y+1.
 
 /*posicion en donde quiero poner un 0*/
 obtenerIndice([Y|Ys],Columnas,Indice):- I=Y,J=Ys,Indice is I*Columnas+J.
 
+/*obtiene el valor en la grilla que corresponde con el Indice*/
 obtenerValor([],_Indice,_Cont,_Valor).
 obtenerValor([X|Xs],Indice,Cont,Valor):- (( Indice is Cont, Valor=X);X is X),obtenerValor(Xs,Indice,Cont+1,Valor).
 
@@ -25,7 +27,9 @@ setearValor([X|Xs],Indice,Cont,Valor,[Z|Zs]):- ((Indice is Cont,Z=Valor);Z=X),se
 
 
 /*join recursivo*/
-joinRec(Grilla,Columnas,[Ultimo],[W],Resultado):-obtenerIndice(Ultimo,Columnas,Indice),setearValor(Grilla,Indice,0,Resultado,NuevaGrilla),W=NuevaGrilla.
+joinRec(Grilla,Columnas,[Ultimo],[W],Resultado):-obtenerIndice(Ultimo,Columnas,Indice),
+	setearValor(Grilla,Indice,0,Resultado,NuevaGrilla),
+	W=NuevaGrilla.
 joinRec(Grilla,Columnas,[[Y|Ys]|Zs],[R|Rs],Resultado):- obtenerIndice([Y|Ys],Columnas,Indice), 
 	setearValor(Grilla,Indice,0,0,NuevaGrilla),
 	R= NuevaGrilla,
@@ -45,13 +49,16 @@ join(Grid, NumOfColumns, Path, RGrids):-smallerPow2GreaterOrEqualThan(Grid,NumOf
 sumatoria([],0).
 sumatoria([X|Xs],Sum):- sumatoria(Xs,Aux), Sum is Aux+X.
 
+
+/* recibe el path como primer parametro, y retorna una nueva lista con los Indices correspondientes a 
+cada posicion del path*/
 obtenerListaIndices([],_NumOfColumns,[]).
 obtenerListaIndices([[X|Xs]|Zs],NumOfColumns,[Y|Ys]):-obtenerIndice([X|Xs],NumOfColumns,Index),
 	obtenerListaIndices(Zs,NumOfColumns,Ys),
 	Y=Index.
 
 
-
+/*recibe una grilla y una lista de indices ; retorna una lista de valores correspondientes a cada indice de la lista*/
 obtenerListaValores(_Grilla,[],[]).
 obtenerListaValores(Grilla,[Y|Ys],[Z|Zs]):- obtenerValor(Grilla,Y,0,Z), obtenerListaValores(Grilla,Ys,Zs).
 
@@ -111,6 +118,7 @@ gravity(Grilla,NumOfColumns,GrillaG):- longitud(Grilla,Long),NumOfRows is Long/N
 	recorrerColumnas(Grilla,NumOfColumns,NumOfRows,NumOfColumns,NumOfRows,GrillaG).
 
 
+/*calcula el valor absoluto del numero X*/
 abs(X, Y) :- X < 0,Y is -X.
 abs(X, X) :- X >= 0.
 
