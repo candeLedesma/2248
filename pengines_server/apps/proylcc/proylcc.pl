@@ -27,20 +27,22 @@ setearValor([X|Xs],Indice,Cont,Valor,[Z|Zs]):- ((Indice is Cont,Z=Valor);Z=X),se
 
 
 /*join recursivo*/
-joinRec(Grilla,Columnas,[Ultimo],[W],Resultado):-obtenerIndice(Ultimo,Columnas,Indice),
-	setearValor(Grilla,Indice,0,Resultado,NuevaGrilla),
+joinRec(Grilla,Columnas,[Ultimo],Sumatoria,[W]):-
+	obtenerIndice(Ultimo,Columnas,Indice),
+	setearValor(Grilla,Indice,0,Sumatoria,NuevaGrilla),
 	W=NuevaGrilla.
-joinRec(Grilla,Columnas,[[Y|Ys]|Zs],[R|Rs],Resultado):- obtenerIndice([Y|Ys],Columnas,Indice), 
+joinRec(Grilla,Columnas,[[Y|Ys]|Zs],Sumatoria,[R|Rs]):- obtenerIndice([Y|Ys],Columnas,Indice), 
 	setearValor(Grilla,Indice,0,0,NuevaGrilla),
 	R= NuevaGrilla,
-	joinRec(NuevaGrilla,Columnas,Zs,Rs,Resultado).
+	joinRec(NuevaGrilla,Columnas,Zs,Sumatoria,Rs).
 
 
-join(Grid, NumOfColumns, Path, RGrids):-smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado), 
-	joinRec(Grid,NumOfColumns,Path,PEPE,Resultado),
-	ultimo(PEPE,Ultimo),
+join(Grid, NumOfColumns, Path, RGrids):-
+	smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Sumatoria), 
+	joinRec(Grid,NumOfColumns,Path,Sumatoria,ListaGrillas),
+	ultimo(ListaGrillas,Ultimo),
 	gravity(Ultimo,NumOfColumns,GrillaNueva),
-	append(PEPE,[GrillaNueva],GrillaGravedad),
+	append(ListaGrillas,[GrillaNueva],GrillaGravedad),
 	rellenarGrilla(GrillaNueva,GrillaLlena),
 	append(GrillaGravedad,[GrillaLlena],RGrids).
 
@@ -108,15 +110,15 @@ recorrerFilas(Grilla,Col,Fila,NumOfColumns,NumOfRows,GNueva):-
 	recorrerFilas(Nueva,Col,F,NumOfColumns,NumOfRows,GNueva).
 
 /* caso base col=0*/
-recorrerColumnas(Grilla,0,_Fila,_NumOfColumns,_NumOfRows,Grilla).
-recorrerColumnas(Grilla,Col,Fila,NumOfColumns,NumOfRows,R):- C is Col-1, 
-	recorrerFilas(Grilla,C,0,NumOfColumns,NumOfRows,GNueva),
+recorrerColumnas(Grilla,NumOfColumns,_Fila,NumOfColumns,_NumOfRows,Grilla).
+recorrerColumnas(Grilla,Col,Fila,NumOfColumns,NumOfRows,R):- 
+	recorrerFilas(Grilla,Col,0,NumOfColumns,NumOfRows,GNueva),
+	C is Col+1, 
 	recorrerColumnas(GNueva,C,Fila,NumOfColumns,NumOfRows,R).
 
 
 gravity(Grilla,NumOfColumns,GrillaG):- longitud(Grilla,Long),NumOfRows is Long/NumOfColumns,
-	recorrerColumnas(Grilla,NumOfColumns,NumOfRows,NumOfColumns,NumOfRows,GrillaG).
-
+	recorrerColumnas(Grilla,0,NumOfRows,NumOfColumns,NumOfRows,GrillaG).
 
 /*calcula el valor absoluto del numero X*/
 abs(X, Y) :- X < 0,Y is -X.
