@@ -64,7 +64,7 @@ obtenerListaIndices([[X|Xs]|Zs],NumOfColumns,[Y|Ys]):-obtenerIndice([X|Xs],NumOf
 obtenerListaValores(_Grilla,[],[]).
 obtenerListaValores(Grilla,[Y|Ys],[Z|Zs]):- obtenerValor(Grilla,Y,0,Z), obtenerListaValores(Grilla,Ys,Zs).
 
-
+log2(0,0):-!.
 log2(N, Resultado) :- Resultado is log(N) / log(2).
 
 piso(X,Resultado):- Resultado is floor(X).
@@ -79,7 +79,7 @@ potencia(X,N,P) :- % Caso recursivo
 
 
 
-smallerPow2GreaterOrEqualThan(_Grid,_NumOfColumns,[_U],_R).
+smallerPow2GreaterOrEqualThan(_Grid,_NumOfColumns,[_U],0).%REVISAR ESE 0!!!!!!
 smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado):- obtenerListaIndices(Path,NumOfColumns,Indices), 
 	obtenerListaValores(Grid,Indices,Valores),
 	sumatoria(Valores,Total),
@@ -125,7 +125,7 @@ abs(X, Y) :- X < 0,Y is -X.
 abs(X, X) :- X >= 0.
 
 /*true si las posiciones son adyacentes A0=\=B0,A1=\=B1,*/
-adyacente([A0|A1],[B0|B1]):- I0 is A0-B0, I1 is A1-B1, abs(I0,R0), abs(I1,R1), R0=<1, R1=<1.
+adyacente([A0|A1],[B0|B1]):- posDistinta([A0|A1],[B0|B1]),I0 is A0-B0, I1 is A1-B1, abs(I0,R0), abs(I1,R1), R0=<1, R1=<1.
 
 /*calculo auxiliar para recorrer matriz*/
 calcular(NumOfColumns,FILA,COL,F,C):-((COL is NumOfColumns-1, F is FILA+1, C is 0); (F is FILA,C is COL+1)).
@@ -143,11 +143,11 @@ cumpleCondiciones(L,Pos) :-
 
 
 /*retorna en Lista todas las posiciones adyacentes a la posicion Pos*/
-buscarAdyacentes(_Grilla,_Pos,_Elem,NumOfRows,_NumOfColumns,NumOfRows,0,Listita,_Visitados,Listita).
-buscarAdyacentes([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,FILA,COL,Listita,Visitados,R):-
+buscarAdyacentes(_Grilla,_Pos,_Elem,NumOfRows,_NumOfColumns,NumOfRows,0,Adyacentes,_Visitados,Adyacentes).
+buscarAdyacentes([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,FILA,COL,Adyacentes,Visitados,R):-
     calcular(NumOfColumns,FILA,COL,F,C),
-    ((notmember([FILA,COL],Visitados),X is Elem,cumpleCondiciones(Listita,[FILA,COL]),
-    append(Listita,[[FILA,COL]],NuevaLista));NuevaLista=Listita),
+    ((notmember([FILA,COL],Visitados),X is Elem,cumpleCondiciones(Adyacentes,[FILA,COL]),
+    append(Adyacentes,[[FILA,COL]],NuevaLista));NuevaLista=Adyacentes),
     buscarAdyacentes(Xs,Pos,Elem,NumOfRows,NumOfColumns,F,C,NuevaLista,Visitados,R).
 
 
@@ -169,7 +169,7 @@ recorrerGrilla([X|Xs],GrillaAux,NumOfRows,NumOfColumns,FILA,COLUMNA,Visitados,Re
 booster(Grilla,NumOfColumns,Resultado):-
 	longitud(Grilla,Long),
 	NumOfRows is Long/NumOfColumns,
-	recorrerGrilla(Grilla,Grilla,NumOfRows,NumOfColumns,0,0,[-1],Resultado).
+	recorrerGrilla(Grilla,Grilla,NumOfRows,NumOfColumns,0,0,[],Resultado).
 
 
 /*caso base ambas listas estan vacias*/
@@ -188,3 +188,121 @@ booster(Grilla,NumOfColumns,Resultado):-
  rellenarGrilla([X|Xs], [X|Ys]) :-
      X \= 0,
      rellenarGrilla(Xs, Ys).
+
+
+
+
+% segunda etapa:
+
+
+%true si X=Elem o X es la sigueinte potencia de Elem
+igualOsiguiente(X,Elem):- X is Elem*2; X is Elem.
+
+/*retorna en Lista todas las posiciones adyacentes a la posicion Pos
+
+NK:
+Elem es el valor en Pos
+FILA y COL no son constantes, por qué ponerlas en mayúscula?
+Si estamos calculando adyacentes, por qué hay una variable Camino?
+
+*/
+obtenerListaAdyacentes(_Grilla,_Pos,_Elem,NumOfRows,_NumOfColumns,NumOfRows,0,Camino,Camino).
+obtenerListaAdyacentes([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,FILA,COL,Camino,R):-
+    calcular(NumOfColumns,FILA,COL,F,C), %NK: calcular es un nombre poco descriptivo, qué hace?
+    ((notmember([FILA,COL],Camino),igualOsiguiente(X,Elem),adyacente([FILA,COL],Pos),
+    append(Camino,[[FILA,COL]],NuevaLista));
+    NuevaLista=Camino),
+    obtenerListaAdyacentes(Xs,Pos,Elem,NumOfRows,NumOfColumns,F,C,NuevaLista,R).
+
+removerRepetidos(L1,L2,L3):- findall(Z, (member(Z,L1), notmember(Z, L2)), L3).
+
+
+%CaminoMejor es el mejor entre el caminoA y el caminoB
+
+/*mejorCamino(Grilla,NumOfColumns,caminoA,caminoB,caminoMejor):-
+    writeln('en mejorCamino:'),
+    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,caminoA,S1),
+    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,caminoB,S2),
+    ((S1>S2,caminoMejor=caminoA);caminoMejor=caminoB).*/
+
+obtenerLista(Grilla,_NumOfRows,NumOfColumns,[],CaminoNuevo,MejorCamino,CaminoResultado):-
+    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,MejorCamino,S1),
+    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoNuevo,S2),
+    ((S1>S2,CaminoResultado=MejorCamino);CaminoResultado=CaminoNuevo).
+    %NK: La lista de vecinos es vacia, se terminó el camino
+    %mejorCamino(Grilla,NumOfColumns,MejorCamino,CaminoNuevo,CaminoResultado),
+
+    
+obtenerLista(Grilla,NumOfRows,NumOfColumns,[X|Xs],CaminoActual,MejorActual,R):-
+    %NK: La lista de vecinos no es vacia, hay que seguir
+    obtenerMejor(Grilla,X,NumOfRows,NumOfColumns,CaminoActual,MejorActual,MejorNuevo), %NK: Seguimos el backtracking con X, el primer vecino
+    %mejorCamino(Grilla,NumOfColumns,MejorActual,MejorNuevo,MejorDeTodos),%Cande: nuevo metodo mejorCamino
+    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,MejorNuevo,S1),
+    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,MejorActual,S2),
+    ((S1>S2, CaminoResultado=MejorNuevo);CaminoResultado=MejorActual),
+    obtenerLista(Grilla,NumOfRows,NumOfColumns,Xs,CaminoActual,CaminoResultado,R). %NK: Ignoramos el primer vecino X y seguimos con el resto
+    %NK: Acá falta quedarnos con el mejor de las dos llamadas!!
+
+obtenerMejor(Grilla,Pos,NumOfRows,NumOfColumns,CaminoAct,MejorCamino,ResultadoFinal):-
+    obtenerIndice(Pos,NumOfColumns,Indice),
+    obtenerValor(Grilla,Indice,0,Valor), %NK: Si Valor solo se usa en obtenerListaAdyacentes, entonces es probable que sea mejor que lo calcule obtenerListaAdyacentes 
+    append(CaminoAct,[Pos],CaminoNuevo), %NK: Agrego POS al camino
+    obtenerListaAdyacentes(Grilla,Pos,Valor,NumOfRows,NumOfColumns,0,0,[],Adyacentes), %NK: Obtengo lista de adyacentes de Pos
+    removerRepetidos(Adyacentes,CaminoAct,ListaSinRep), %NK: Remuevo los adyacentes que estan en el camino actual
+    obtenerLista(Grilla,NumOfRows,NumOfColumns,ListaSinRep,CaminoNuevo,MejorCamino,ResultadoFinal).
+    
+%NK: Creo que falta chequear que los dos primeros elemento sean iguales (dejar para el final)
+
+
+%compara el valor maximo de cada camino y retorna el mayor con su camino correspondiente
+obtenerCaminoMaximo(_Grilla,_GrillaAux,NumOfRows,_NumOfColumns,NumOfRows,0,CaminoR,CaminoR).
+obtenerCaminoMaximo([_X|Xs],Grilla,NumOfRows,NumOfColumns,FILA,COL,CaminoAct,Resultado):-
+    %NK: Itero por todas las casillas iniciales, calculo el mejor camino para cada una y me quedo con la mejor al final
+     obtenerMejor(Grilla,[FILA,COL],NumOfRows,NumOfColumns,[],[],CaminoObt),
+     writeln('CaminoObtenido: '),
+     writeln(CaminoObt),
+     longitud(CaminoObt,Long),
+     %mejorCamino(Grilla,NumOfColumns,CaminoAct,CaminoObt,CaminoMejor),%Cande: nuevo metodo mejorCamino
+     smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoObt,S1),
+     smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoAct,S2),
+     ((Long>1,S1>S2,CaminoMejor=CaminoObt);CaminoMejor=CaminoAct),
+     calcular(NumOfColumns,FILA,COL,F,C),
+     obtenerCaminoMaximo(Xs,Grilla,NumOfRows,NumOfColumns,F,C,CaminoMejor,Resultado).
+    
+ayudaMaxima(Grilla,NumOfColumns,Resultado):-
+	longitud(Grilla,Long),
+	NumOfRows is Long/NumOfColumns,
+	obtenerCaminoMaximo(Grilla,Grilla,NumOfRows,NumOfColumns,0,0,[],Resultado).
+
+
+/*?-obtenerMejor([2,2,
+             4,16],[0,0],2,2,[],[],F).*/
+
+/*ayudaMaxima([2,4,
+             8,16],2,F).*/
+
+
+/*Casos de prueba ayudaMaxima:
+ * caso 1:
+ ayudaMaxima([2,2,4,
+             32,8,4,
+             2,128,32],3,F).
+  * caso 2:
+  ayudaMaxima([2,2,8,
+             16,32,16,
+             4,2,8],3,F).
+   * caso 3:
+   ayudaMaxima([4,2,2,
+             16,16,4,
+             4,4,4],3,F).
+             
+    * caso 4:
+    ayudaMaxima([2,2,4,
+             16,16,32,
+             8,2,2],3,F).
+    * CASO 5:
+    ayudaMaxima([2,4,8,
+              16,16,32,
+              4,4,8],3,F).
+   
+ * */
