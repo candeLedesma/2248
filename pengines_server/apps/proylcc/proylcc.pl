@@ -173,21 +173,21 @@ booster(Grilla,NumOfColumns,Resultado):-
 
 
 /*caso base ambas listas estan vacias*/
- rellenarGrilla([], []).
+rellenarGrilla([], []).
  /*el 1er elemento de la lista puede ser 0
   * entonces devolvemos una lista con su primer elemento un numero random
   */
- rellenarGrilla([0|Xs], [ValorA|Ys]) :-
-     random(2, 8, Random),
-     potencia(2, Random, ValorA),
-     rellenarGrilla(Xs, Ys).
+rellenarGrilla([0|Xs], [ValorA|Ys]) :-
+    random(2, 8, Random),
+    potencia(2, Random, ValorA),
+    rellenarGrilla(Xs, Ys).
 
  /*el 1er elemento de la lista no es 0
   * entonces devolvemos una lista con su primer elemento igual al de la anterior
   */
- rellenarGrilla([X|Xs], [X|Ys]) :-
-     X \= 0,
-     rellenarGrilla(Xs, Ys).
+rellenarGrilla([X|Xs], [X|Ys]) :-
+    X \= 0,
+    rellenarGrilla(Xs, Ys).
 
 
 
@@ -243,12 +243,35 @@ obtenerLista(Grilla,NumOfRows,NumOfColumns,[X|Xs],CaminoActual,MejorActual,R):-
     obtenerLista(Grilla,NumOfRows,NumOfColumns,Xs,CaminoActual,CaminoResultado,R). %NK: Ignoramos el primer vecino X y seguimos con el resto
     %NK: Acá falta quedarnos con el mejor de las dos llamadas!!
 
-obtenerMejor(Grilla,Pos,NumOfRows,NumOfColumns,CaminoAct,MejorCamino,ResultadoFinal):-
+% FACTORIZAR OBTENER MEJOR!!!
+
+%si caminoActual tiene unico elemento -> chequear que el valor de Pos sea igual -> append (camino valido)
+obtenerMejor(Grilla,PosAct,NumOfRows,NumOfColumns,[UnicoElem|[]],MejorCamino,ResultadoFinal):- 
+    obtenerIndice(PosAct,NumOfColumns,IndiceAct),
+    obtenerValor(Grilla,IndiceAct,0,ValorAct),
+    obtenerIndice(UnicoElem,NumOfColumns,Indice),
+    obtenerValor(Grilla,Indice,0,Elem), 
+    ((Elem is ValorAct,append([UnicoElem],[PosAct],CaminoNuevo),%camino valido
+    obtenerListaAdyacentes(Grilla,PosAct,ValorAct,NumOfRows,NumOfColumns,0,0,[],Adyacentes), 
+    removerRepetidos(Adyacentes,[UnicoElem],ListaSinRep));
+    (ListaSinRep=[],CaminoNuevo=[UnicoElem])), %camino invalido
+    obtenerLista(Grilla,NumOfRows,NumOfColumns,ListaSinRep,CaminoNuevo,MejorCamino,ResultadoFinal).
+
+%caso CaminoActual con mas de un elmento -> ningun chequeo -> append 
+obtenerMejor(Grilla,Pos,NumOfRows,NumOfColumns,[X|Xs],MejorCamino,ResultadoFinal):-
     obtenerIndice(Pos,NumOfColumns,Indice),
-    obtenerValor(Grilla,Indice,0,Valor), %NK: Si Valor solo se usa en obtenerListaAdyacentes, entonces es probable que sea mejor que lo calcule obtenerListaAdyacentes 
-    append(CaminoAct,[Pos],CaminoNuevo), %NK: Agrego POS al camino
-    obtenerListaAdyacentes(Grilla,Pos,Valor,NumOfRows,NumOfColumns,0,0,[],Adyacentes), %NK: Obtengo lista de adyacentes de Pos
-    removerRepetidos(Adyacentes,CaminoAct,ListaSinRep), %NK: Remuevo los adyacentes que estan en el camino actual
+    obtenerValor(Grilla,Indice,0,Valor),
+    append([X|Xs],[Pos],CaminoNuevo), %NK: Agrego POS al camino
+    obtenerListaAdyacentes(Grilla,Pos,Valor,NumOfRows,NumOfColumns,0,0,[],Adyacentes), 
+    removerRepetidos(Adyacentes,[X|Xs],ListaSinRep), 
+    obtenerLista(Grilla,NumOfRows,NumOfColumns,ListaSinRep,CaminoNuevo,MejorCamino,ResultadoFinal).
+
+obtenerMejor(Grilla,Pos,NumOfRows,NumOfColumns,[],MejorCamino,ResultadoFinal):-
+    obtenerIndice(Pos,NumOfColumns,Indice),
+    obtenerValor(Grilla,Indice,0,Valor),
+    append([],[Pos],CaminoNuevo), %NK: Agrego POS al camino
+    obtenerListaAdyacentes(Grilla,Pos,Valor,NumOfRows,NumOfColumns,0,0,[],Adyacentes), 
+    removerRepetidos(Adyacentes,[],ListaSinRep), 
     obtenerLista(Grilla,NumOfRows,NumOfColumns,ListaSinRep,CaminoNuevo,MejorCamino,ResultadoFinal).
     
 %NK: Creo que falta chequear que los dos primeros elemento sean iguales (dejar para el final)
@@ -259,8 +282,6 @@ obtenerCaminoMaximo(_Grilla,_GrillaAux,NumOfRows,_NumOfColumns,NumOfRows,0,Camin
 obtenerCaminoMaximo([_X|Xs],Grilla,NumOfRows,NumOfColumns,FILA,COL,CaminoAct,Resultado):-
     %NK: Itero por todas las casillas iniciales, calculo el mejor camino para cada una y me quedo con la mejor al final
      obtenerMejor(Grilla,[FILA,COL],NumOfRows,NumOfColumns,[],[],CaminoObt),
-     writeln('CaminoObtenido: '),
-     writeln(CaminoObt),
      longitud(CaminoObt,Long),
      %mejorCamino(Grilla,NumOfColumns,CaminoAct,CaminoObt,CaminoMejor),%Cande: nuevo metodo mejorCamino
      smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoObt,S1),
@@ -269,40 +290,10 @@ obtenerCaminoMaximo([_X|Xs],Grilla,NumOfRows,NumOfColumns,FILA,COL,CaminoAct,Res
      calcular(NumOfColumns,FILA,COL,F,C),
      obtenerCaminoMaximo(Xs,Grilla,NumOfRows,NumOfColumns,F,C,CaminoMejor,Resultado).
     
-ayudaMaxima(Grilla,NumOfColumns,Resultado):-
-	longitud(Grilla,Long),
-	NumOfRows is Long/NumOfColumns,
-	obtenerCaminoMaximo(Grilla,Grilla,NumOfRows,NumOfColumns,0,0,[],Resultado).
-
-
-/*?-obtenerMejor([2,2,
-             4,16],[0,0],2,2,[],[],F).*/
-
-/*ayudaMaxima([2,4,
-             8,16],2,F).*/
-
-
-/*Casos de prueba ayudaMaxima:
- * caso 1:
- ayudaMaxima([2,2,4,
-             32,8,4,
-             2,128,32],3,F).
-  * caso 2:
-  ayudaMaxima([2,2,8,
-             16,32,16,
-             4,2,8],3,F).
-   * caso 3:
-   ayudaMaxima([4,2,2,
-             16,16,4,
-             4,4,4],3,F).
-             
-    * caso 4:
-    ayudaMaxima([2,2,4,
-             16,16,32,
-             8,2,2],3,F).
-    * CASO 5:
-    ayudaMaxima([2,4,8,
-              16,16,32,
-              4,4,8],3,F).
-   
- * */
+ayudaMaxima(Grilla,NumOfColumns,Resultado,Suma):-
+    longitud(Grilla,Long),
+    NumOfRows is Long/NumOfColumns,
+    obtenerCaminoMaximo(Grilla,Grilla,NumOfRows,NumOfColumns,0,0,[],Resultado),
+    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,Resultado,Suma).
+    
+    
