@@ -3,7 +3,7 @@ import Square from './Square';
 import Connector from './Connector';
 import { valueInPos, numberToColor, connectionInPath, posInPath, isAdyacent, equalPos, joinResult } from './util';
 
-function Board({ grid, numOfColumns, path, onPathChange, onDone, setNuevo}) {//preguntar score
+function Board({ grid, numOfColumns, path, onPathChange, onDone, setNuevo}) {
    
     function onSquareClick(pos) {
         if (path.length === 0) {    // Clicked the first square, so init the path with that square.

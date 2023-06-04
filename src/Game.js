@@ -14,6 +14,7 @@ function Game() {
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
   const [nuevo, setNuevo] = useState(0);
+  //const [pathAux, setPathAux] = useState([]);
 
   useEffect(() => {
     // This is executed just once, after the first render.
@@ -80,6 +81,19 @@ function Game() {
     });
   }
 
+  /*,....................*/ 
+  function activateAyudaMaxima() {
+    const gridS = JSON.stringify(grid);
+    const queryS = "ayudaMaxima(" + gridS + "," + numOfColumns + ", RCamino, SumaCamino)";
+    setWaiting(true);
+    pengine.query(queryS, (success, response) => {
+      if (success) {
+         
+      }
+      setWaiting(false);
+    });
+  }
+
   /**
    * Displays each grid of the sequence as the current grid in 1sec intervals.
    * @param {number[][]} rGrids a sequence of grids.
@@ -119,6 +133,9 @@ function Game() {
       />
       <button onClick={activateBooster}>
         Booster
+      </button>
+      <button onClick={activateAyudaMaxima}>
+        MaxHelp
       </button>
 
     </div>

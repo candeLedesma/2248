@@ -17,9 +17,9 @@ export const valueInPos = (pos, grid, numOfColumns) => {
 }
 
 //pregunttar
-export const index = (pos,numOfColumns)=> {
+/*export const index = (pos,numOfColumns)=> {
     return pos[0]*numOfColumns+pos[1];
-}
+}*/
 
 export const posInPath = (pos, path) => {
     return path.some(posI => equalPos(posI, pos));
