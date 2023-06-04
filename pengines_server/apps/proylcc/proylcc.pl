@@ -218,30 +218,19 @@ removerRepetidos(L1,L2,L3):- findall(Z, (member(Z,L1), notmember(Z, L2)), L3).
 
 
 %CaminoMejor es el mejor entre el caminoA y el caminoB
-
-/*mejorCamino(Grilla,NumOfColumns,caminoA,caminoB,caminoMejor):-
-    writeln('en mejorCamino:'),
-    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,caminoA,S1),
-    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,caminoB,S2),
-    ((S1>S2,caminoMejor=caminoA);caminoMejor=caminoB).*/
+mejorCamino(Grilla,NumOfColumns,CaminoA,CaminoB,CaminoMejor):-
+    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoA,S1),
+    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoB,S2),
+    ((S1>S2,CaminoMejor=CaminoA);CaminoMejor=CaminoB).
 
 obtenerLista(Grilla,_NumOfRows,NumOfColumns,[],CaminoNuevo,MejorCamino,CaminoResultado):-
-    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,MejorCamino,S1),
-    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoNuevo,S2),
-    ((S1>S2,CaminoResultado=MejorCamino);CaminoResultado=CaminoNuevo).
-    %NK: La lista de vecinos es vacia, se terminó el camino
-    %mejorCamino(Grilla,NumOfColumns,MejorCamino,CaminoNuevo,CaminoResultado),
+    mejorCamino(Grilla,NumOfColumns,MejorCamino,CaminoNuevo,CaminoResultado).
 
-    
 obtenerLista(Grilla,NumOfRows,NumOfColumns,[X|Xs],CaminoActual,MejorActual,R):-
     %NK: La lista de vecinos no es vacia, hay que seguir
     obtenerMejor(Grilla,X,NumOfRows,NumOfColumns,CaminoActual,MejorActual,MejorNuevo), %NK: Seguimos el backtracking con X, el primer vecino
-    %mejorCamino(Grilla,NumOfColumns,MejorActual,MejorNuevo,MejorDeTodos),%Cande: nuevo metodo mejorCamino
-    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,MejorNuevo,S1),
-    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,MejorActual,S2),
-    ((S1>S2, CaminoResultado=MejorNuevo);CaminoResultado=MejorActual),
+    mejorCamino(Grilla,NumOfColumns,MejorActual,MejorNuevo,CaminoResultado),%Cande: nuevo metodo mejorCamino
     obtenerLista(Grilla,NumOfRows,NumOfColumns,Xs,CaminoActual,CaminoResultado,R). %NK: Ignoramos el primer vecino X y seguimos con el resto
-    %NK: Acá falta quedarnos con el mejor de las dos llamadas!!
 
 % FACTORIZAR OBTENER MEJOR!!!
 
@@ -279,16 +268,12 @@ obtenerMejor(Grilla,Pos,NumOfRows,NumOfColumns,[],MejorCamino,ResultadoFinal):-
 
 %compara el valor maximo de cada camino y retorna el mayor con su camino correspondiente
 obtenerCaminoMaximo(_Grilla,_GrillaAux,NumOfRows,_NumOfColumns,NumOfRows,0,CaminoR,CaminoR).
+%NK: Itero por todas las casillas iniciales, calculo el mejor camino para cada una y me quedo con la mejor al final
 obtenerCaminoMaximo([_X|Xs],Grilla,NumOfRows,NumOfColumns,FILA,COL,CaminoAct,Resultado):-
-    %NK: Itero por todas las casillas iniciales, calculo el mejor camino para cada una y me quedo con la mejor al final
-     obtenerMejor(Grilla,[FILA,COL],NumOfRows,NumOfColumns,[],[],CaminoObt),
-     longitud(CaminoObt,Long),
-     %mejorCamino(Grilla,NumOfColumns,CaminoAct,CaminoObt,CaminoMejor),%Cande: nuevo metodo mejorCamino
-     smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoObt,S1),
-     smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoAct,S2),
-     ((Long>1,S1>S2,CaminoMejor=CaminoObt);CaminoMejor=CaminoAct),
-     calcular(NumOfColumns,FILA,COL,F,C),
-     obtenerCaminoMaximo(Xs,Grilla,NumOfRows,NumOfColumns,F,C,CaminoMejor,Resultado).
+    obtenerMejor(Grilla,[FILA,COL],NumOfRows,NumOfColumns,[],[],CaminoObt),
+    mejorCamino(Grilla,NumOfColumns,CaminoAct,CaminoObt,CaminoMejor),%Cande: nuevo metodo mejorCamino
+    calcular(NumOfColumns,FILA,COL,F,C),
+    obtenerCaminoMaximo(Xs,Grilla,NumOfRows,NumOfColumns,F,C,CaminoMejor,Resultado).
     
 ayudaMaxima(Grilla,NumOfColumns,Resultado,Suma):-
     longitud(Grilla,Long),
