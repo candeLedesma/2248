@@ -14,6 +14,8 @@ function Game() {
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
   const [nuevo, setNuevo] = useState(0);
+  //PRUEBA
+  const [boosterActivado, setBoosterActivado] = useState(true);
 
   useEffect(() => {
     // This is executed just once, after the first render.
@@ -38,18 +40,21 @@ function Game() {
    * Called while the user is drawing a path in the grid, each time the path changes.
    */
   function onPathChange(newPath) {
+    setBoosterActivado(false);
     // No effect if waiting.
     if (waiting) {
       return;
     }
     setPath(newPath);
     console.log(JSON.stringify(newPath));
+    
   }
 
   /**
    * Called when the user finished drawing a path in the grid.
    */
   function onPathDone() {
+    setBoosterActivado(true);
     const gridS = JSON.stringify(grid);
     const pathS = JSON.stringify(path);
 
@@ -65,19 +70,21 @@ function Game() {
         setWaiting(false);
       }
     });
+    
   }
   /*booster(Grilla,NumOfColumns,Resultado)*/ 
   function activateBooster() {
-    const gridS = JSON.stringify(grid);
-  
-    const queryS = "booster(" + gridS + "," + numOfColumns + ", RGrid)";
-    setWaiting(true);
-    pengine.query(queryS, (success, response) => {
-      if (success) {
-        setGrid(response['RGrid']); 
-      }
-      setWaiting(false);
-    });
+    if(boosterActivado === true){
+      const gridS = JSON.stringify(grid);
+      const queryS = "booster(" + gridS + "," + numOfColumns + ", RGrid)";
+      setWaiting(true);
+      pengine.query(queryS, (success, response) => {
+        if (success) {
+          setGrid(response['RGrid']); 
+        }
+        setWaiting(false);
+      });
+    }
   }
 
   /**
@@ -85,6 +92,7 @@ function Game() {
    * @param {number[][]} rGrids a sequence of grids.
    */
   function animateEffect(rGrids) {
+    setBoosterActivado(false);
     setGrid(rGrids[0]);
     const restRGrids = rGrids.slice(1);
     if (restRGrids.length > 0) {
@@ -94,6 +102,7 @@ function Game() {
     } else {
       setWaiting(false);
     }
+    setBoosterActivado(true);
   }
 
   if (grid === null) {

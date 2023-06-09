@@ -143,33 +143,33 @@ cumpleCondiciones(L,Pos) :-
 
 
 /*retorna en Lista todas las posiciones adyacentes a la posicion Pos*/
-buscarAdyacentes(_Grilla,_Pos,_Elem,NumOfRows,_NumOfColumns,NumOfRows,0,Listita,_Visitados,Listita).
-buscarAdyacentes([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,FILA,COL,Listita,Visitados,R):-
+buscarAdyacentes(_Grilla,_Elem,NumOfRows,_NumOfColumns,[NumOfRows|0],Listita,_Visitados,Listita).
+buscarAdyacentes([X|Xs],Elem,NumOfRows,NumOfColumns,[FILA|COL],Listita,Visitados,R):-
     calcular(NumOfColumns,FILA,COL,F,C),
     ((notmember([FILA,COL],Visitados),X is Elem,cumpleCondiciones(Listita,[FILA,COL]),
     append(Listita,[[FILA,COL]],NuevaLista));NuevaLista=Listita),
-    buscarAdyacentes(Xs,Pos,Elem,NumOfRows,NumOfColumns,F,C,NuevaLista,Visitados,R).
+    buscarAdyacentes(Xs,Elem,NumOfRows,NumOfColumns,[F|C],NuevaLista,Visitados,R).
 
 
 /*true si X no pertenece a la lista L*/
 notmember(X, L) :- \+ member(X, L).
 
 /*caso base NumOfRows=FILA,*/
-recorrerGrilla(_Grilla,GrillaAux,NumOfRows,_NumOfColumns,NumOfRows,0,_Visitados,GrillaAux).
-recorrerGrilla([X|Xs],GrillaAux,NumOfRows,NumOfColumns,FILA,COLUMNA,Visitados,Resultado):-
+recorrerGrilla(_Grilla,GrillaAux,NumOfRows,_NumOfColumns,[NumOfRows|0],_Visitados,GrillaAux).
+recorrerGrilla([X|Xs],GrillaAux,NumOfRows,NumOfColumns,[FILA|COLUMNA],Visitados,Resultado):-
     (notmember([FILA,COLUMNA],Visitados),
-    buscarAdyacentes(GrillaAux,[FILA,COLUMNA],X,NumOfRows,NumOfColumns,0,0,[[FILA,COLUMNA]],Visitados,Adyacentes),
+    buscarAdyacentes(GrillaAux,X,NumOfRows,NumOfColumns,[0|0],[[FILA,COLUMNA]],Visitados,Adyacentes),
     (longitud(Adyacentes,Long),Long>1,join(GrillaAux,NumOfColumns,Adyacentes,ListaGrillas),
     append(Visitados,Adyacentes,Visitados2),ultimo(ListaGrillas,GrillaNueva));
     GrillaNueva=GrillaAux,Visitados2=Visitados),
     calcular(NumOfColumns,FILA,COLUMNA,F,C),
-    recorrerGrilla(Xs,GrillaNueva,NumOfRows,NumOfColumns,F,C,Visitados2,Resultado).
+    recorrerGrilla(Xs,GrillaNueva,NumOfRows,NumOfColumns,[F|C],Visitados2,Resultado).
     
    
 booster(Grilla,NumOfColumns,Resultado):-
 	longitud(Grilla,Long),
 	NumOfRows is Long/NumOfColumns,
-	recorrerGrilla(Grilla,Grilla,NumOfRows,NumOfColumns,0,0,[-1],Resultado).
+	recorrerGrilla(Grilla,Grilla,NumOfRows,NumOfColumns,[0|0],[-1],Resultado).
 
 
 /*caso base ambas listas estan vacias*/
