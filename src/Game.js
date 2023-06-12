@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
-import { joinResult } from './util';
+import { joinResult} from './util';
 import Square from './Square';
 let pengine;
 
@@ -13,8 +13,8 @@ function Game() {
   const [score, setScore] = useState(0);
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
+
   const [nuevo, setNuevo] = useState(0);
-  //PRUEBA
   const [boosterActivado, setBoosterActivado] = useState(true);
 
   useEffect(() => {
@@ -55,6 +55,7 @@ function Game() {
    */
   function onPathDone() {
     setBoosterActivado(true);
+    
     const gridS = JSON.stringify(grid);
     const pathS = JSON.stringify(path);
 
@@ -85,6 +86,21 @@ function Game() {
         setWaiting(false);
       });
     }
+  }
+
+  /*,....................*/ 
+  function activateAyudaMaxima() {
+    const gridS = JSON.stringify(grid);
+    const queryS = "ayudaMaxima(" + gridS + "," + numOfColumns + ", RCamino, SumaCamino)";
+    
+    pengine.query(queryS, (success, response) => {
+      if (success) {
+        setPath(response['RCamino']);
+        setNuevo(response['SumaCamino']);
+      }
+      setWaiting(false);
+    });
+
   }
 
   /**
@@ -128,6 +144,9 @@ function Game() {
       />
       <button onClick={activateBooster}>
         Booster
+      </button>
+      <button onClick={activateAyudaMaxima}>
+        MaxHelp
       </button>
 
     </div>
