@@ -7,15 +7,12 @@ let pengine;
 
 function Game() {
 
-  // State
   const [grid, setGrid] = useState(null);
   const [numOfColumns, setNumOfColumns] = useState(null);
   const [score, setScore] = useState(0);
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
-
   const [nuevo, setNuevo] = useState(0);
-  const [boosterActivado, setBoosterActivado] = useState(true);
 
   useEffect(() => {
     // This is executed just once, after the first render.
@@ -40,22 +37,19 @@ function Game() {
    * Called while the user is drawing a path in the grid, each time the path changes.
    */
   function onPathChange(newPath) {
-    setBoosterActivado(false);
     // No effect if waiting.
     if (waiting) {
       return;
     }
     setPath(newPath);
     console.log(JSON.stringify(newPath));
-    
+   
   }
 
   /**
    * Called when the user finished drawing a path in the grid.
    */
   function onPathDone() {
-    setBoosterActivado(true);
-    
     const gridS = JSON.stringify(grid);
     const pathS = JSON.stringify(path);
 
@@ -71,21 +65,22 @@ function Game() {
         setWaiting(false);
       }
     });
-    
   }
   /*booster(Grilla,NumOfColumns,Resultado)*/ 
   function activateBooster() {
-    if(boosterActivado === true){
+    if(path.length === 0){
       const gridS = JSON.stringify(grid);
       const queryS = "booster(" + gridS + "," + numOfColumns + ", RGrid)";
       setWaiting(true);
       pengine.query(queryS, (success, response) => {
-        if (success) {
-          setGrid(response['RGrid']); 
-        }
-        setWaiting(false);
-      });
+      if (success) {
+        setGrid(response['RGrid']); 
+        
+      }
+      setWaiting(false);
+    });
     }
+
   }
 
   /*,....................*/ 
@@ -100,15 +95,25 @@ function Game() {
       }
       setWaiting(false);
     });
-
   }
-
+  function activateAyudaMaximosIguales() {
+    const gridS = JSON.stringify(grid);
+    
+    const queryS = "ayudaMaximosIguales(" + gridS + "," + numOfColumns + ", RCamino, SumaCamino)";
+    
+    pengine.query(queryS, (success, response) => {
+      if (success) {
+        setPath(response['RCamino']);
+        setNuevo(response['SumaCamino']);
+      }
+      setWaiting(false);
+    });
+  }
   /**
    * Displays each grid of the sequence as the current grid in 1sec intervals.
    * @param {number[][]} rGrids a sequence of grids.
    */
   function animateEffect(rGrids) {
-    setBoosterActivado(false);
     setGrid(rGrids[0]);
     const restRGrids = rGrids.slice(1);
     if (restRGrids.length > 0) {
@@ -118,7 +123,6 @@ function Game() {
     } else {
       setWaiting(false);
     }
-    setBoosterActivado(true);
   }
 
   if (grid === null) {
@@ -148,7 +152,9 @@ function Game() {
       <button onClick={activateAyudaMaxima}>
         MaxHelp
       </button>
-
+      <button onClick={activateAyudaMaximosIguales}>
+        MaximosIguales
+      </button>
     </div>
 
   );

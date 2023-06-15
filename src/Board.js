@@ -20,6 +20,7 @@ function Board({ grid, numOfColumns, path, onPathChange, onDone, setNuevo}) {
     }
     function onSquareHover(pos) {
         if (path.length === 0) {    // Ignore square hover if not collecting a path.
+            
             return;
         }
         if (isAdyacent(pos, path[path.length - 1])) {
@@ -35,9 +36,7 @@ function Board({ grid, numOfColumns, path, onPathChange, onDone, setNuevo}) {
             }
         }
     }
-    
 
-    /************************************ */
     useEffect(() => {
         window.addEventListener("keydown", e => {
             if (e.key === "Escape") {
