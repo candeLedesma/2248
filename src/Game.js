@@ -13,6 +13,8 @@ function Game() {
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
   const [nuevo, setNuevo] = useState(0);
+  const [gravedad, setGravedad] = useState(false); 
+
 
   useEffect(() => {
     // This is executed just once, after the first render.
@@ -68,7 +70,7 @@ function Game() {
   }
   /*booster(Grilla,NumOfColumns,Resultado)*/ 
   function activateBooster() {
-    if(path.length === 0){
+    if(path.length === 0 && gravedad === false){
       const gridS = JSON.stringify(grid);
       const queryS = "booster(" + gridS + "," + numOfColumns + ", RGrid)";
       setWaiting(true);
@@ -83,37 +85,44 @@ function Game() {
 
   }
 
-  /*,....................*/ 
+
   function activateAyudaMaxima() {
-    const gridS = JSON.stringify(grid);
-    const queryS = "ayudaMaxima(" + gridS + "," + numOfColumns + ", RCamino, SumaCamino)";
-    
-    pengine.query(queryS, (success, response) => {
-      if (success) {
-        setPath(response['RCamino']);
-        setNuevo(response['SumaCamino']);
-      }
-      setWaiting(false);
-    });
+    if(path.length === 0 && gravedad === false){
+      const gridS = JSON.stringify(grid);
+      const queryS = "ayudaMaxima(" + gridS + "," + numOfColumns + ", RCamino, SumaCamino)";
+      
+      pengine.query(queryS, (success, response) => {
+        if (success) {
+          setPath(response['RCamino']);
+          setNuevo(response['SumaCamino']);
+        }
+        setWaiting(false);
+      });
+    }
   }
+
+
   function activateAyudaMaximosIguales() {
-    const gridS = JSON.stringify(grid);
-    
-    const queryS = "ayudaMaximosIguales(" + gridS + "," + numOfColumns + ", RCamino, SumaCamino)";
-    
-    pengine.query(queryS, (success, response) => {
-      if (success) {
-        setPath(response['RCamino']);
-        setNuevo(response['SumaCamino']);
-      }
-      setWaiting(false);
-    });
+    if(path.length === 0 && gravedad === false){
+      const gridS = JSON.stringify(grid);
+      const queryS = "ayudaMaximosIguales(" + gridS + "," + numOfColumns + ", RCamino, SumaCamino)";
+      pengine.query(queryS, (success, response) => {
+        if (success) {
+          setPath(response['RCamino']);
+          setNuevo(response['SumaCamino']);
+        }
+        setWaiting(false);
+      });
+    }
   }
+
+
   /**
    * Displays each grid of the sequence as the current grid in 1sec intervals.
    * @param {number[][]} rGrids a sequence of grids.
    */
   function animateEffect(rGrids) {
+    setGravedad(true);
     setGrid(rGrids[0]);
     const restRGrids = rGrids.slice(1);
     if (restRGrids.length > 0) {
@@ -123,6 +132,7 @@ function Game() {
     } else {
       setWaiting(false);
     }
+    setGravedad(true);
   }
 
   if (grid === null) {

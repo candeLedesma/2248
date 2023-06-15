@@ -78,8 +78,8 @@ potencia(X,N,P) :- % Caso recursivo
    P is P1 * X. % El resultado es X multiplicado por X elevado a N-1
 
 
-
-smallerPow2GreaterOrEqualThan(_Grid,_NumOfColumns,[_U],0).%REVISAR ESE 0!!!!!!
+smallerPow2GreaterOrEqualThan(_Grid,_NumOfColumns,[],0).
+smallerPow2GreaterOrEqualThan(_Grid,_NumOfColumns,[_U],0).
 smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Resultado):- obtenerListaIndices(Path,NumOfColumns,Indices), 
 	obtenerListaValores(Grid,Indices,Valores),
 	sumatoria(Valores,Total),
@@ -229,7 +229,9 @@ obtenerLista(Grilla,NumOfRows,NumOfColumns,[],CaminoNuevo,MejorCamino,Final,2):-
     mejorCamino(Grilla,NumOfColumns,MejorCamino,CaminoNuevo,CaminoResultado),
     ultimo(CaminoResultado,Ult),
     join(Grilla,NumOfColumns,CaminoResultado,ListaDeGrillas),%cande
-    ultimo(ListaDeGrillas,GrillaGravedad),%cande
+    ultimo(ListaDeGrillas,GrillaLlena),%cande
+    delete(ListaDeGrillas,GrillaLlena,ListaDeGrillasModificada),
+    ultimo(ListaDeGrillasModificada,GrillaGravedad),
     smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoResultado,Suma),
     obtenerListaAdyacentesIguales(GrillaGravedad,Ult, Suma,NumOfRows, NumOfColumns,[0,0],[],AdyacentesIguales),%cande
     %se fija si en la grilla con la gravedad aplicada hay adyacentes iguales a la suma del camino resultado
@@ -276,7 +278,7 @@ obtenerCaminoMaximo(_Grilla,_GrillaAux,NumOfRows,_NumOfColumns,[NumOfRows,0],Cam
 obtenerCaminoMaximo([_X|Xs],Grilla,NumOfRows,NumOfColumns,[Fila,Col],CaminoAct,Resultado,Flag):-
     obtenerMejor(Grilla,[Fila,Col],NumOfRows,NumOfColumns,[],[],CaminoObt,Flag),
     mejorCamino(Grilla,NumOfColumns,CaminoAct,CaminoObt,CaminoMejor),
-    calcularSiguientePosicion(NumOfColumns,Fila,Col,F,C),
+    calcularSiguientePosicion(NumOfColumns,Fila,Col,F,C),%siguientePos
     obtenerCaminoMaximo(Xs,Grilla,NumOfRows,NumOfColumns,[F,C],CaminoMejor,Resultado,Flag).
     
 ayudaMaxima(Grilla,NumOfColumns,Resultado,Suma):-
