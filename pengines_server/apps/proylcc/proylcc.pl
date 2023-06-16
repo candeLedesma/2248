@@ -27,24 +27,34 @@ setearValor([X|Xs],Indice,Cont,Valor,[Z|Zs]):- ((Indice is Cont,Z=Valor);Z=X),se
 
 
 /*join recursivo*/
-joinRec(Grilla,Columnas,[Ultimo],Sumatoria,[W]):-
+explotar(Grilla,Columnas,[Ultimo],Sumatoria,[W]):-
 	obtenerIndice(Ultimo,Columnas,Indice),
 	setearValor(Grilla,Indice,0,Sumatoria,NuevaGrilla),
 	W=NuevaGrilla.
-joinRec(Grilla,Columnas,[[Y|Ys]|Zs],Sumatoria,[R|Rs]):- obtenerIndice([Y|Ys],Columnas,Indice), 
+explotar(Grilla,Columnas,[[Y|Ys]|Zs],Sumatoria,[R|Rs]):- obtenerIndice([Y|Ys],Columnas,Indice), 
 	setearValor(Grilla,Indice,0,0,NuevaGrilla),
 	R= NuevaGrilla,
-	joinRec(NuevaGrilla,Columnas,Zs,Sumatoria,Rs).
+	explotar(NuevaGrilla,Columnas,Zs,Sumatoria,Rs).
 
 
 join(Grid, NumOfColumns, Path, RGrids):-
 	smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Sumatoria), 
-	joinRec(Grid,NumOfColumns,Path,Sumatoria,ListaGrillas),
+	explotar(Grid,NumOfColumns,Path,Sumatoria,ListaGrillas),
 	ultimo(ListaGrillas,Ultimo),
 	gravity(Ultimo,NumOfColumns,GrillaNueva),
 	append(ListaGrillas,[GrillaNueva],GrillaGravedad),
 	rellenarGrilla(GrillaNueva,GrillaLlena),
 	append(GrillaGravedad,[GrillaLlena],RGrids).
+
+
+/*el mismo predicado que el join pero sin rellenar la grilla*/
+aplicarExplotarYGravedad(Grid, NumOfColumns, Path, GrillaGravedad):-
+    smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Sumatoria), 
+	explotar(Grid,NumOfColumns,Path,Sumatoria,ListaGrillas),
+	ultimo(ListaGrillas,Ultimo),
+	gravity(Ultimo,NumOfColumns,GrillaNueva),
+	append(ListaGrillas,[GrillaNueva],GrillaGravedad).
+
 
 
 /*predicados para calcular ultimo bloque*/
@@ -155,21 +165,32 @@ buscarAdyacentes([X|Xs],Elem,NumOfRows,NumOfColumns,[FILA|COL],Listita,Visitados
 notmember(X, L) :- \+ member(X, L).
 
 /*caso base NumOfRows=FILA,*/
-recorrerGrilla(_Grilla,GrillaAux,NumOfRows,_NumOfColumns,[NumOfRows|0],_Visitados,GrillaAux).
-recorrerGrilla([X|Xs],GrillaAux,NumOfRows,NumOfColumns,[FILA|COLUMNA],Visitados,Resultado):-
+recorrerGrilla(_Grilla,_GrillaAux,NumOfRows,_NumOfColumns,[NumOfRows|0],_Visitados,[]).
+recorrerGrilla([X|Xs],GrillaAux,NumOfRows,NumOfColumns,[FILA|COLUMNA],Visitados,[G|Gs]):-
     (notmember([FILA,COLUMNA],Visitados),
     buscarAdyacentes(GrillaAux,X,NumOfRows,NumOfColumns,[0|0],[[FILA,COLUMNA]],Visitados,Adyacentes),
-    (longitud(Adyacentes,Long),Long>1,join(GrillaAux,NumOfColumns,Adyacentes,ListaGrillas),
-    append(Visitados,Adyacentes,Visitados2),ultimo(ListaGrillas,GrillaNueva));
-    GrillaNueva=GrillaAux,Visitados2=Visitados),
+    (longitud(Adyacentes,Long),Long>1,G=Adyacentes,
+    append(Visitados,Adyacentes,Visitados2));Visitados2=Visitados,G=[]),
     calcularSiguientePosicion(NumOfColumns,FILA,COLUMNA,F,C),
-    recorrerGrilla(Xs,GrillaNueva,NumOfRows,NumOfColumns,[F|C],Visitados2,Resultado).
-    
+    recorrerGrilla(Xs,GrillaAux,NumOfRows,NumOfColumns,[F|C],Visitados2,Gs).
    
-booster(Grilla,NumOfColumns,Resultado):-
+
+explotarGrupos(Grilla,_NumOfColumns,[],Grilla).
+explotarGrupos(Grilla,NumOfColumns,[X|Xs],Resultado):-
+    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,X,Sumatoria),
+    (longitud(X,Long),Long>0,
+    explotar(Grilla,NumOfColumns,X,Sumatoria,ListaDeGrillas),
+    ultimo(ListaDeGrillas,GrillaNueva),explotarGrupos(GrillaNueva,NumOfColumns,Xs,Resultado));
+    explotarGrupos(Grilla,NumOfColumns,Xs,Resultado).
+
+
+booster(Grilla,NumOfColumns,[GrillaConGravedad,GrillaLLena]):-
 	longitud(Grilla,Long),
 	NumOfRows is Long/NumOfColumns,
-	recorrerGrilla(Grilla,Grilla,NumOfRows,NumOfColumns,[0|0],[-1],Resultado).
+	recorrerGrilla(Grilla,Grilla,NumOfRows,NumOfColumns,[0|0],[],Grupos),
+    explotarGrupos(Grilla,NumOfColumns,Grupos,GrillaConCeros),
+    gravity(GrillaConCeros,NumOfColumns,GrillaConGravedad),
+    rellenarGrilla(GrillaConGravedad,GrillaLLena).
 
 
 /*caso base ambas listas estan vacias*/
@@ -194,20 +215,10 @@ booster(Grilla,NumOfColumns,Resultado):-
 
 % segunda etapa:
 
-% segunda etapa:
-
-
 %true si X=Elem o X es la sigueinte potencia de Elem
 igualOsiguiente(X,Elem):- X is Elem*2; X is Elem.
 
-/*retorna en Lista todas las posiciones adyacentes a la posicion Pos
-
-NK:
-Elem es el valor en Pos
-FILA y COL no son constantes, por qué ponerlas en mayúscula?
-Si estamos calculando adyacentes, por qué hay una variable Camino?
-
-*/
+%retorna en Lista todas las posiciones adyacentes a la posicion Pos
 obtenerListaAdyacentesIguales(_Grilla,_Pos,_Elem,NumOfRows,_NumOfColumns,[NumOfRows,0],Camino,Camino).
 obtenerListaAdyacentesIguales([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,[Fila, Col],Camino,R):-
     calcularSiguientePosicion(NumOfColumns,Fila, Col,F,C), %NK: calcular es un nombre poco descriptivo, qué hace?
@@ -233,19 +244,17 @@ obtenerListaAdyacentes([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,[Fila, Col],Camino
     obtenerListaAdyacentes(Xs,Pos,Elem,NumOfRows,NumOfColumns,[F,C],NuevaLista,R).
 
 
-aChequear(CaminoActual,[XUlt,YUlt],[XReal,YReal]):- findall([XPos,YPos],
-                                                    (member([XPos,YPos],CaminoActual),YPos is YUlt,XPos>XUlt),ListaColumnas),
-    												longitud(ListaColumnas,Long), YReal=YUlt, XReal is XUlt+Long.
+aChequear(CaminoActual,[XUlt,YUlt],[XReal,YReal]):- 
+    findall([XPos,YPos],(member([XPos,YPos],CaminoActual),YPos is YUlt,XPos>XUlt),ListaColumnas),
+    longitud(ListaColumnas,Long), YReal=YUlt, XReal is XUlt+Long.
     			
     
 
 chequearGrillaGravedad(_Grilla,_NumOfRows,_NumOfColumns,[],[]).
 chequearGrillaGravedad(Grilla,NumOfRows,NumOfColumns,CaminoActual,Final):-	
     ultimo(CaminoActual,Ult),
-    join(Grilla,NumOfColumns,CaminoActual,ListaDeGrillas),
-    ultimo(ListaDeGrillas,GrillaLlena),
-    delete(ListaDeGrillas,GrillaLlena,ListaDeGrillasModificada),
-    ultimo(ListaDeGrillasModificada,GrillaGravedad),
+    aplicarExplotarYGravedad(Grilla,NumOfColumns,CaminoActual,ListaDeGrillas),
+    ultimo(ListaDeGrillas,GrillaGravedad),
     smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoActual,Suma),
     aChequear(CaminoActual,Ult,PosReal),
     obtenerListaAdyacentesIguales(GrillaGravedad,PosReal, Suma,NumOfRows, NumOfColumns,[0,0],[],AdyacentesIguales),
@@ -261,9 +270,8 @@ obtenerLista(Grilla,_NumOfRows,NumOfColumns,[],CaminoNuevo,MejorCamino,CaminoRes
 
 %caso base 2 (Flag=2)
 obtenerLista(Grilla,NumOfRows,NumOfColumns,[],CaminoNuevo,MejorCamino,Final,2):-
-    chequearGrillaGravedad(Grilla,NumOfRows,NumOfColumns,CaminoNuevo,CaminoNuevoChequeado),
-    chequearGrillaGravedad(Grilla,NumOfRows,NumOfColumns,MejorCamino,MejorCaminoChequeado),
-    mejorCamino(Grilla,NumOfColumns,MejorCaminoChequeado,CaminoNuevoChequeado,Final).%revisar
+    mejorCamino(Grilla,NumOfColumns,MejorCamino,CaminoNuevo,CaminoRes),%revisar
+    chequearGrillaGravedad(Grilla,NumOfRows,NumOfColumns,CaminoRes,Final).
 
 %caso rec
 obtenerLista(Grilla,NumOfRows,NumOfColumns,[X|Xs],CaminoActual,MejorActual,R,Flag):-
