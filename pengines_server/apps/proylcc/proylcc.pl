@@ -4,11 +4,6 @@
 
 	]).
 
-:- module(proylcc, 
-	[  
-		gravity/4
-
-	]).
 
 /*calcula la longitud de la lista pasada por parametro*/
 longitud([],0).
