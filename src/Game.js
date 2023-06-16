@@ -68,21 +68,19 @@ function Game() {
       }
     });
   }
-  /*booster(Grilla,NumOfColumns,Resultado)*/ 
+  /*booster(Grilla,NumOfColumns,[GrillaConCeros,GrillaConGravedad,GrillaLLena])*/ 
   function activateBooster() {
     if(path.length === 0 && gravedad === false){
       const gridS = JSON.stringify(grid);
-      const queryS = "booster(" + gridS + "," + numOfColumns + ", RGrid)";
+      const queryS = "booster(" + gridS + "," + numOfColumns + ", RGrids)";
       setWaiting(true);
       pengine.query(queryS, (success, response) => {
       if (success) {
-        setGrid(response['RGrid']); 
-        
+        animateEffect(response['RGrids']);
       }
       setWaiting(false);
     });
     }
-
   }
 
 
@@ -128,7 +126,7 @@ function Game() {
     if (restRGrids.length > 0) {
       setTimeout(() => {
         animateEffect(restRGrids);
-      }, 100);//1000
+      }, 300);//1000
     } else {
       setWaiting(false);
     }

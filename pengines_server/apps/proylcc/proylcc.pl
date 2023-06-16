@@ -184,13 +184,14 @@ explotarGrupos(Grilla,NumOfColumns,[X|Xs],Resultado):-
     explotarGrupos(Grilla,NumOfColumns,Xs,Resultado).
 
 
-booster(Grilla,NumOfColumns,[GrillaConGravedad,GrillaLLena]):-
+booster(Grilla,NumOfColumns,ResultadoFinal):-
 	longitud(Grilla,Long),
 	NumOfRows is Long/NumOfColumns,
 	recorrerGrilla(Grilla,Grilla,NumOfRows,NumOfColumns,[0|0],[],Grupos),
     explotarGrupos(Grilla,NumOfColumns,Grupos,GrillaConCeros),
     gravity(GrillaConCeros,NumOfColumns,GrillaConGravedad),
-    rellenarGrilla(GrillaConGravedad,GrillaLLena).
+    rellenarGrilla(GrillaConGravedad,GrillaLLena),
+    ResultadoFinal=[GrillaConCeros,GrillaConGravedad,GrillaLLena].
 
 
 /*caso base ambas listas estan vacias*/
