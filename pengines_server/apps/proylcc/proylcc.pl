@@ -191,20 +191,31 @@ booster(Grilla,NumOfColumns,Resultado):-
 
 
 
-% SEGUNDA ETAPA:
+
+% segunda etapa:
+
+% segunda etapa:
+
 
 %true si X=Elem o X es la sigueinte potencia de Elem
 igualOsiguiente(X,Elem):- X is Elem*2; X is Elem.
 
-%retorna en Lista todas las posiciones adyacentes a la posicion Pos
+/*retorna en Lista todas las posiciones adyacentes a la posicion Pos
+
+NK:
+Elem es el valor en Pos
+FILA y COL no son constantes, por qué ponerlas en mayúscula?
+Si estamos calculando adyacentes, por qué hay una variable Camino?
+
+*/
 obtenerListaAdyacentesIguales(_Grilla,_Pos,_Elem,NumOfRows,_NumOfColumns,[NumOfRows,0],Camino,Camino).
 obtenerListaAdyacentesIguales([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,[Fila, Col],Camino,R):-
-    calcularSiguientePosicion(NumOfColumns,Fila, Col,F,C), 
-    ((notmember([Fila, Col],Camino),X is Elem,adyacente([Fila, Col],Pos),append(Camino,[[Fila,Col]],NuevaLista));
+    calcularSiguientePosicion(NumOfColumns,Fila, Col,F,C), %NK: calcular es un nombre poco descriptivo, qué hace?
+    ((notmember([Fila, Col],Camino),X is Elem,adyacente([Fila, Col],Pos),
+    append(Camino,[[Fila,Col]],NuevaLista));
     NuevaLista=Camino),
     obtenerListaAdyacentesIguales(Xs,Pos,Elem,NumOfRows,NumOfColumns,[F,C],NuevaLista,R).
 
-%remueve elementos repetidos de L1 que esten en L2 y retorna resultado en L3
 removerRepetidos(L1,L2,L3):- findall(Z, (member(Z,L1), notmember(Z, L2)), L3).
 
 %CaminoMejor es el mejor entre el caminoA y el caminoB
@@ -215,34 +226,51 @@ mejorCamino(Grilla,NumOfColumns,CaminoA,CaminoB,CaminoMejor):-
 
 obtenerListaAdyacentes(_Grilla,_Pos,_Elem,NumOfRows,_NumOfColumns,[NumOfRows,0],Camino,Camino).
 obtenerListaAdyacentes([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,[Fila, Col],Camino,R):-
-    calcularSiguientePosicion(NumOfColumns,Fila, Col,F,C), 
+    calcularSiguientePosicion(NumOfColumns,Fila, Col,F,C), %NK: calcular es un nombre poco descriptivo, qué hace?
     ((notmember([Fila, Col],Camino),igualOsiguiente(X,Elem),adyacente([Fila,Col],Pos),
     append(Camino,[[Fila,Col]],NuevaLista));
     NuevaLista=Camino),
     obtenerListaAdyacentes(Xs,Pos,Elem,NumOfRows,NumOfColumns,[F,C],NuevaLista,R).
 
-%caso base 1 (Flag=1)
-obtenerLista(Grilla,_NumOfRows,NumOfColumns,[],CaminoNuevo,MejorCamino,CaminoResultado,1):-
-    mejorCamino(Grilla,NumOfColumns,MejorCamino,CaminoNuevo,CaminoResultado).
-%caso base 2 (Flag=2)
-obtenerLista(Grilla,NumOfRows,NumOfColumns,[],CaminoNuevo,MejorCamino,Final,2):-
-    mejorCamino(Grilla,NumOfColumns,MejorCamino,CaminoNuevo,CaminoResultado),
-    ultimo(CaminoResultado,Ult),
-    join(Grilla,NumOfColumns,CaminoResultado,ListaDeGrillas),%cande
-    ultimo(ListaDeGrillas,GrillaLlena),%cande
+
+aChequear(CaminoActual,[XUlt,YUlt],[XReal,YReal]):- findall([XPos,YPos],
+                                                    (member([XPos,YPos],CaminoActual),YPos is YUlt,XPos>XUlt),ListaColumnas),
+    												longitud(ListaColumnas,Long), YReal=YUlt, XReal is XUlt+Long.
+    			
+    
+
+chequearGrillaGravedad(_Grilla,_NumOfRows,_NumOfColumns,[],[]).
+chequearGrillaGravedad(Grilla,NumOfRows,NumOfColumns,CaminoActual,Final):-	
+    ultimo(CaminoActual,Ult),
+    join(Grilla,NumOfColumns,CaminoActual,ListaDeGrillas),
+    ultimo(ListaDeGrillas,GrillaLlena),
     delete(ListaDeGrillas,GrillaLlena,ListaDeGrillasModificada),
     ultimo(ListaDeGrillasModificada,GrillaGravedad),
-    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoResultado,Suma),
-    obtenerListaAdyacentesIguales(GrillaGravedad,Ult, Suma,NumOfRows, NumOfColumns,[0,0],[],AdyacentesIguales),%cande
+    smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoActual,Suma),
+    aChequear(CaminoActual,Ult,PosReal),
+    obtenerListaAdyacentesIguales(GrillaGravedad,PosReal, Suma,NumOfRows, NumOfColumns,[0,0],[],AdyacentesIguales),
     %se fija si en la grilla con la gravedad aplicada hay adyacentes iguales a la suma del camino resultado
-    ((longitud(AdyacentesIguales,Long2),Long2>0,Final=CaminoResultado);
+    ((longitud(AdyacentesIguales,Long2),Long2>0,Final=CaminoActual);
     Final=[]).
-%caso recursivo
+
+
+
+%caso base (Flafo=1)
+obtenerLista(Grilla,_NumOfRows,NumOfColumns,[],CaminoNuevo,MejorCamino,CaminoResultado,1):-
+    mejorCamino(Grilla,NumOfColumns,MejorCamino,CaminoNuevo,CaminoResultado).
+
+%caso base 2 (Flag=2)
+obtenerLista(Grilla,NumOfRows,NumOfColumns,[],CaminoNuevo,MejorCamino,Final,2):-
+    chequearGrillaGravedad(Grilla,NumOfRows,NumOfColumns,CaminoNuevo,CaminoNuevoChequeado),
+    chequearGrillaGravedad(Grilla,NumOfRows,NumOfColumns,MejorCamino,MejorCaminoChequeado),
+    mejorCamino(Grilla,NumOfColumns,MejorCaminoChequeado,CaminoNuevoChequeado,Final).%revisar
+
+%caso rec
 obtenerLista(Grilla,NumOfRows,NumOfColumns,[X|Xs],CaminoActual,MejorActual,R,Flag):-
-    %La lista de vecinos no es vacia, hay que seguir
-    obtenerMejor(Grilla,X,NumOfRows,NumOfColumns,CaminoActual,MejorActual,MejorNuevo,Flag), %Seguimos el backtracking con X, el primer vecino
+    %NK: La lista de vecinos no es vacia, hay que seguir
+    obtenerMejor(Grilla,X,NumOfRows,NumOfColumns,CaminoActual,MejorActual,MejorNuevo,Flag), %NK: Seguimos el backtracking con X, el primer vecino
     mejorCamino(Grilla,NumOfColumns,MejorActual,MejorNuevo,CaminoResultado),
-    obtenerLista(Grilla,NumOfRows,NumOfColumns,Xs,CaminoActual,CaminoResultado,R,Flag). %Ignoramos el primer vecino X y seguimos con el resto
+    obtenerLista(Grilla,NumOfRows,NumOfColumns,Xs,CaminoActual,CaminoResultado,R,Flag). %NK: Ignoramos el primer vecino X y seguimos con el resto
 
 %obtenerMejorFactorizado devuelve la lista sin repetidos y el camino nuevo
 obtenerMejorFactorizado(Grilla, Pos, NumOfColumns, NumOfRows, Remover, ListaSinRep, CaminoNuevo):-
@@ -269,7 +297,6 @@ obtenerMejor(Grilla,Pos,NumOfRows,NumOfColumns,[X|Xs],MejorCamino,ResultadoFinal
     obtenerMejorFactorizado(Grilla, Pos, NumOfColumns, NumOfRows, [X|Xs], ListaSinRep, CaminoNuevo),
     obtenerLista(Grilla,NumOfRows,NumOfColumns,ListaSinRep,CaminoNuevo,MejorCamino,ResultadoFinal,Flag).
 
-%caso CaminoActual vacio-> ningun chequeo -> append 
 obtenerMejor(Grilla,Pos,NumOfRows,NumOfColumns,[],MejorCamino,ResultadoFinal,Flag):-
     obtenerMejorFactorizado(Grilla, Pos, NumOfColumns, NumOfRows, [], ListaSinRep, CaminoNuevo),
     obtenerLista(Grilla,NumOfRows,NumOfColumns,ListaSinRep,CaminoNuevo,MejorCamino,ResultadoFinal,Flag).
@@ -278,7 +305,7 @@ obtenerCaminoMaximo(_Grilla,_GrillaAux,NumOfRows,_NumOfColumns,[NumOfRows,0],Cam
 obtenerCaminoMaximo([_X|Xs],Grilla,NumOfRows,NumOfColumns,[Fila,Col],CaminoAct,Resultado,Flag):-
     obtenerMejor(Grilla,[Fila,Col],NumOfRows,NumOfColumns,[],[],CaminoObt,Flag),
     mejorCamino(Grilla,NumOfColumns,CaminoAct,CaminoObt,CaminoMejor),
-    calcularSiguientePosicion(NumOfColumns,Fila,Col,F,C),%siguientePos
+    calcularSiguientePosicion(NumOfColumns,Fila,Col,F,C),
     obtenerCaminoMaximo(Xs,Grilla,NumOfRows,NumOfColumns,[F,C],CaminoMejor,Resultado,Flag).
     
 ayudaMaxima(Grilla,NumOfColumns,Resultado,Suma):-

@@ -87,7 +87,7 @@ function Game() {
 
 
   function activateAyudaMaxima() {
-    if(path.length === 0 && gravedad === false){
+    if(path.length === 0 &&  gravedad === false){
       const gridS = JSON.stringify(grid);
       const queryS = "ayudaMaxima(" + gridS + "," + numOfColumns + ", RCamino, SumaCamino)";
       
@@ -132,7 +132,7 @@ function Game() {
     } else {
       setWaiting(false);
     }
-    setGravedad(true);
+    setGravedad(false);
   }
 
   if (grid === null) {
