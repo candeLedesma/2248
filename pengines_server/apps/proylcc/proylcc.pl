@@ -47,7 +47,7 @@ join(Grid, NumOfColumns, Path, RGrids):-
 	append(GrillaGravedad,[GrillaLlena],RGrids).
 
 
-/*el mismo predicado que el join pero sin rellenar la grilla*/
+/*el mismo predicado que el join pero sin rellenar la grilla, se llama desde caso base 2 de obtenerLista*/
 aplicarExplotarYGravedad(Grid, NumOfColumns, Path, GrillaGravedad):-
     smallerPow2GreaterOrEqualThan(Grid,NumOfColumns,Path,Sumatoria), 
 	explotar(Grid,NumOfColumns,Path,Sumatoria,ListaGrillas),
@@ -138,7 +138,7 @@ abs(X, X) :- X >= 0.
 adyacente([A0|A1],[B0|B1]):- posDistinta([A0|A1],[B0|B1]),I0 is A0-B0, I1 is A1-B1, abs(I0,R0), abs(I1,R1), R0=<1, R1=<1.
 
 /*calculo auxiliar para recorrer matriz*/
-calcularSiguientePosicion(NumOfColumns,FILA,COL,F,C):-((COL is NumOfColumns-1, F is FILA+1, C is 0); (F is FILA,C is COL+1)).
+calcularSiguientePosicion(NumOfColumns,Fila,Col,F,C):-((Col is NumOfColumns-1, F is Fila+1, C is 0); (F is Fila,C is Col+1)).
 
 /*devulve el ultimo elemento de una lista*/
 ultimo([U],U).
@@ -154,10 +154,10 @@ cumpleCondiciones(L,Pos) :-
 
 /*retorna en Lista todas las posiciones adyacentes a la posicion Pos con valor igual a elem*/
 buscarAdyacentes(_Grilla,_Elem,NumOfRows,_NumOfColumns,[NumOfRows|0],Listita,_Visitados,Listita).
-buscarAdyacentes([X|Xs],Elem,NumOfRows,NumOfColumns,[FILA|COL],Listita,Visitados,R):-
-    calcularSiguientePosicion(NumOfColumns,FILA,COL,F,C),
-    ((notmember([FILA,COL],Visitados),X is Elem,cumpleCondiciones(Listita,[FILA,COL]),
-    append(Listita,[[FILA,COL]],NuevaLista));NuevaLista=Listita),
+buscarAdyacentes([X|Xs],Elem,NumOfRows,NumOfColumns,[Fila|Col],Listita,Visitados,R):-
+    calcularSiguientePosicion(NumOfColumns,Fila,Col,F,C),
+    ((notmember([Fila,Col],Visitados),X is Elem,cumpleCondiciones(Listita,[Fila,Col]),
+    append(Listita,[[Fila,Col]],NuevaLista));NuevaLista=Listita),
     buscarAdyacentes(Xs,Elem,NumOfRows,NumOfColumns,[F|C],NuevaLista,Visitados,R).
 
 
@@ -166,12 +166,12 @@ notmember(X, L) :- \+ member(X, L).
 
 /*caso base NumOfRows=FILA,*/
 recorrerGrilla(_Grilla,_GrillaAux,NumOfRows,_NumOfColumns,[NumOfRows|0],_Visitados,[]).
-recorrerGrilla([X|Xs],GrillaAux,NumOfRows,NumOfColumns,[FILA|COLUMNA],Visitados,[G|Gs]):-
-    (notmember([FILA,COLUMNA],Visitados),
-    buscarAdyacentes(GrillaAux,X,NumOfRows,NumOfColumns,[0|0],[[FILA,COLUMNA]],Visitados,Adyacentes),
+recorrerGrilla([X|Xs],GrillaAux,NumOfRows,NumOfColumns,[Fila|Col],Visitados,[G|Gs]):-
+    (notmember([Fila,Col],Visitados),
+    buscarAdyacentes(GrillaAux,X,NumOfRows,NumOfColumns,[0|0],[[Fila,Col]],Visitados,Adyacentes),
     (longitud(Adyacentes,Long),Long>1,G=Adyacentes,
     append(Visitados,Adyacentes,Visitados2));Visitados2=Visitados,G=[]),
-    calcularSiguientePosicion(NumOfColumns,FILA,COLUMNA,F,C),
+    calcularSiguientePosicion(NumOfColumns,Fila,Col,F,C),
     recorrerGrilla(Xs,GrillaAux,NumOfRows,NumOfColumns,[F|C],Visitados2,Gs).
    
 
@@ -200,16 +200,16 @@ booster(Grilla,NumOfColumns,ResultadoFinal):-
   * entonces devolvemos una lista con su primer elemento un numero random
   */
  rellenarGrilla([0|Xs], [ValorA|Ys]) :-
-     random(2, 8, Random),
-     potencia(2, Random, ValorA),
-     rellenarGrilla(Xs, Ys).
+    random(2, 8, Random),
+    potencia(2, Random, ValorA),
+    rellenarGrilla(Xs, Ys).
 
  /*el 1er elemento de la lista no es 0
   * entonces devolvemos una lista con su primer elemento igual al de la anterior
   */
  rellenarGrilla([X|Xs], [X|Ys]) :-
-     X \= 0,
-     rellenarGrilla(Xs, Ys).
+    X \= 0,
+    rellenarGrilla(Xs, Ys).
 
 
 
@@ -228,6 +228,7 @@ obtenerListaAdyacentesIguales([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,[Fila, Col]
     NuevaLista=Camino),
     obtenerListaAdyacentesIguales(Xs,Pos,Elem,NumOfRows,NumOfColumns,[F,C],NuevaLista,R).
 
+% elimina los elementos en comun que tenga L2 en L1 y retorna la lista sin repetidos L3
 removerRepetidos(L1,L2,L3):- findall(Z, (member(Z,L1), notmember(Z, L2)), L3).
 
 %CaminoMejor es el mejor entre el caminoA y el caminoB
@@ -238,51 +239,50 @@ mejorCamino(Grilla,NumOfColumns,CaminoA,CaminoB,CaminoMejor):-
 
 obtenerListaAdyacentes(_Grilla,_Pos,_Elem,NumOfRows,_NumOfColumns,[NumOfRows,0],Camino,Camino).
 obtenerListaAdyacentes([X|Xs],Pos,Elem,NumOfRows,NumOfColumns,[Fila, Col],Camino,R):-
-    calcularSiguientePosicion(NumOfColumns,Fila, Col,F,C), %NK: calcular es un nombre poco descriptivo, qué hace?
+    calcularSiguientePosicion(NumOfColumns,Fila, Col,F,C), 
     ((notmember([Fila, Col],Camino),igualOsiguiente(X,Elem),adyacente([Fila,Col],Pos),
     append(Camino,[[Fila,Col]],NuevaLista));
     NuevaLista=Camino),
     obtenerListaAdyacentes(Xs,Pos,Elem,NumOfRows,NumOfColumns,[F,C],NuevaLista,R).
 
 
-aChequear(CaminoActual,[XUlt,YUlt],[XReal,YReal]):- 
+% recibe la posicion de la suma actual y calcula la posicion en donde caera por el efecto gravedad
+calcularPosicionSuma(CaminoActual,[XUlt,YUlt],[XReal,YReal]):- 
     findall([XPos,YPos],(member([XPos,YPos],CaminoActual),YPos is YUlt,XPos>XUlt),ListaColumnas),
     longitud(ListaColumnas,Long), YReal=YUlt, XReal is XUlt+Long.
     			
     
-
-chequearGrillaGravedad(_Grilla,_NumOfRows,_NumOfColumns,[],[]).
-chequearGrillaGravedad(Grilla,NumOfRows,NumOfColumns,CaminoActual,Final):-	
+%Simula la gravedad en la grilla y verifica si en esta hay adyacentes iguales a la suma calculada del camino actual
+verificarGrillaGravedad(_Grilla,_NumOfRows,_NumOfColumns,[],[]).
+verificarGrillaGravedad(Grilla,NumOfRows,NumOfColumns,CaminoActual,Final):-	
     ultimo(CaminoActual,Ult),
     aplicarExplotarYGravedad(Grilla,NumOfColumns,CaminoActual,ListaDeGrillas),
     ultimo(ListaDeGrillas,GrillaGravedad),
     smallerPow2GreaterOrEqualThan(Grilla,NumOfColumns,CaminoActual,Suma),
-    aChequear(CaminoActual,Ult,PosReal),
-    obtenerListaAdyacentesIguales(GrillaGravedad,PosReal, Suma,NumOfRows, NumOfColumns,[0,0],[],AdyacentesIguales),
-    %se fija si en la grilla con la gravedad aplicada hay adyacentes iguales a la suma del camino resultado
+    calcularPosicionSuma(CaminoActual,Ult,PosReal),
+    obtenerListaAdyacentesIguales(GrillaGravedad,PosReal, Suma,NumOfRows, NumOfColumns,[0,0],[],AdyacentesIguales), %se fija si en la grilla con la gravedad aplicada hay adyacentes iguales a la suma del camino resultado
     ((longitud(AdyacentesIguales,Long2),Long2>0,Final=CaminoActual);
     Final=[]).
 
 
 
-%caso base (Flafo=1)
+%caso base (Flag=1)
 obtenerLista(Grilla,_NumOfRows,NumOfColumns,[],CaminoNuevo,MejorCamino,CaminoResultado,1):-
     mejorCamino(Grilla,NumOfColumns,MejorCamino,CaminoNuevo,CaminoResultado).
 
 %caso base 2 (Flag=2)
 obtenerLista(Grilla,NumOfRows,NumOfColumns,[],CaminoNuevo,MejorCamino,Final,2):-
-    mejorCamino(Grilla,NumOfColumns,MejorCamino,CaminoNuevo,CaminoRes),%revisar
-    chequearGrillaGravedad(Grilla,NumOfRows,NumOfColumns,CaminoRes,Final).
+    mejorCamino(Grilla,NumOfColumns,MejorCamino,CaminoNuevo,CaminoRes),
+    verificarGrillaGravedad(Grilla,NumOfRows,NumOfColumns,CaminoRes,Final).
 
 %caso rec
 obtenerLista(Grilla,NumOfRows,NumOfColumns,[X|Xs],CaminoActual,MejorActual,R,Flag):-
-    %NK: La lista de vecinos no es vacia, hay que seguir
-    obtenerMejor(Grilla,X,NumOfRows,NumOfColumns,CaminoActual,MejorActual,MejorNuevo,Flag), %NK: Seguimos el backtracking con X, el primer vecino
+    obtenerMejor(Grilla,X,NumOfRows,NumOfColumns,CaminoActual,MejorActual,MejorNuevo,Flag), %Seguimos el backtracking con X, el primer vecino
     mejorCamino(Grilla,NumOfColumns,MejorActual,MejorNuevo,CaminoResultado),
-    obtenerLista(Grilla,NumOfRows,NumOfColumns,Xs,CaminoActual,CaminoResultado,R,Flag). %NK: Ignoramos el primer vecino X y seguimos con el resto
+    obtenerLista(Grilla,NumOfRows,NumOfColumns,Xs,CaminoActual,CaminoResultado,R,Flag). %Ignoramos el primer vecino X y seguimos con el resto
 
-%obtenerMejorFactorizado devuelve la lista sin repetidos y el camino nuevo
-obtenerMejorFactorizado(Grilla, Pos, NumOfColumns, NumOfRows, Remover, ListaSinRep, CaminoNuevo):-
+%devuelve la lista sin repetidos y el camino nuevo
+obtenerMejorAux(Grilla, Pos, NumOfColumns, NumOfRows, Remover, ListaSinRep, CaminoNuevo):-
     obtenerIndice(Pos, NumOfColumns, Indice),
     obtenerValor(Grilla, Indice, 0, Valor),
     obtenerListaAdyacentes(Grilla, Pos, Valor, NumOfRows, NumOfColumns, [0,0],[],Adyacentes),
@@ -301,15 +301,16 @@ obtenerMejor(Grilla,PosAct,NumOfRows,NumOfColumns,[UnicoElem|[]],MejorCamino,Res
     (ListaSinRep=[],CaminoNuevo=[UnicoElem])), %camino invalido
     obtenerLista(Grilla,NumOfRows,NumOfColumns,ListaSinRep,CaminoNuevo,MejorCamino,ResultadoFinal,Flag).
 
-%caso CaminoActual con mas de un elmento -> ningun chequeo -> append 
+%caso CaminoActual con mas de un elemento -> ningun chequeo -> append 
 obtenerMejor(Grilla,Pos,NumOfRows,NumOfColumns,[X|Xs],MejorCamino,ResultadoFinal,Flag):-
-    obtenerMejorFactorizado(Grilla, Pos, NumOfColumns, NumOfRows, [X|Xs], ListaSinRep, CaminoNuevo),
+    obtenerMejorAux(Grilla, Pos, NumOfColumns, NumOfRows, [X|Xs], ListaSinRep, CaminoNuevo),
     obtenerLista(Grilla,NumOfRows,NumOfColumns,ListaSinRep,CaminoNuevo,MejorCamino,ResultadoFinal,Flag).
-
+%caso CaminoActual vacio -> ningun chequeo -> append 
 obtenerMejor(Grilla,Pos,NumOfRows,NumOfColumns,[],MejorCamino,ResultadoFinal,Flag):-
-    obtenerMejorFactorizado(Grilla, Pos, NumOfColumns, NumOfRows, [], ListaSinRep, CaminoNuevo),
+    obtenerMejorAux(Grilla, Pos, NumOfColumns, NumOfRows, [], ListaSinRep, CaminoNuevo),
     obtenerLista(Grilla,NumOfRows,NumOfColumns,ListaSinRep,CaminoNuevo,MejorCamino,ResultadoFinal,Flag).
     
+%Por cada elemento de la grilla busca el camino maximo que se puede obtener a partir de esta posicion
 obtenerCaminoMaximo(_Grilla,_GrillaAux,NumOfRows,_NumOfColumns,[NumOfRows,0],CaminoR,CaminoR,_Flag).
 obtenerCaminoMaximo([_X|Xs],Grilla,NumOfRows,NumOfColumns,[Fila,Col],CaminoAct,Resultado,Flag):-
     obtenerMejor(Grilla,[Fila,Col],NumOfRows,NumOfColumns,[],[],CaminoObt,Flag),
@@ -317,6 +318,7 @@ obtenerCaminoMaximo([_X|Xs],Grilla,NumOfRows,NumOfColumns,[Fila,Col],CaminoAct,R
     calcularSiguientePosicion(NumOfColumns,Fila,Col,F,C),
     obtenerCaminoMaximo(Xs,Grilla,NumOfRows,NumOfColumns,[F,C],CaminoMejor,Resultado,Flag).
     
+
 ayudaMaxima(Grilla,NumOfColumns,Resultado,Suma):-
     longitud(Grilla,Long),
     NumOfRows is Long/NumOfColumns,

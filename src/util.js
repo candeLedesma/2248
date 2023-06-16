@@ -8,7 +8,7 @@ export function numberToColor(num) {
         case 64: return "#8d6ebc";
         case 128: return "purple";
         case 256: return "pink"
-        case 512: return "yellow";
+        case 512: return "blue";
         default: return "green";
     }
 }
